@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+select,input,textarea{
+    border: 1px solid #c9e9d1;
+    outline-color:#638C6D;
+    border-radius: 4px;
+}
+
+.active{
+    background-color: #b5eec3;
+    border-color: #638C6D;
+}

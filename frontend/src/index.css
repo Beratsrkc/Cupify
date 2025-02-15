@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tailwind kullanıyorsan, animasyonları şu şekilde tanımlayabilirsin */
+@keyframes slideUpColor {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 0% 100%;
+  }
+}
+
+.animate-slideUpColor {
+  background: linear-gradient(0deg, #48bb78, #38a169); /* Yeşil gradient */
+  background-size: 100% 200%;
+  animation: slideUpColor 1s ease-out forwards;
+}
+/* Kendi stilini burada yazabilirsin */
+a.active hr {
+    display: block;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    a.active {
+        background-color: black;
+        color: white;
+    }
+}
+
+.phone-input::-webkit-outer-spin-button,
+.phone-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.phone-input {
+  -moz-appearance: textfield;
+}
+
+@keyframes rotate {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(180deg); }
+}
+
+.rotate-y-180 {
+  animation: rotate 0.5s forwards;
+}
+
+.perspective {
+  perspective: 1000px;
+}
+
+.card-inner {
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.card-flipped {
+  transform: rotateY(180deg);
+}
+
+
+
+.custom-swiper-pagination {
+  bottom: -25px !important;
+  
+}
+.swiper-pagination-fraction, .swiper-pagination-custom, .swiper-horizontal > .swiper-pagination-bullets, .swiper-pagination-bullets.swiper-pagination-horizontal {
+  bottom: var(--swiper-pagination-bottom, 8px);
+  top: var(--swiper-pagination-top, auto);
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 25px;
+}
+.custom-swiper-pagination .swiper-pagination-bullet {
+  background-color: #000 !important;
+}
+
