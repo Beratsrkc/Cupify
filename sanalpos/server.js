@@ -36,7 +36,7 @@ app.use(cors({
         'http://localhost:5174',
         'https://cupify-admin.vercel.app', 
         'https://cupify-backend.vercel.app', 
-        'https://cupify-eight.vercel.app' // Burada fazladan https:// yok
+        'https://cupify-eight.vercel.app' 
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'UPDATE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'token'],
