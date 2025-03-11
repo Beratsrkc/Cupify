@@ -36,7 +36,7 @@ import cupifybackground from './cupify-background.png'
 import Kartonbardak2 from './Kartonbardak2.jpg'
 import Kartonbardak from './Kartonbardak.jpg'
 import Kartonbardak3 from './Kartonbardak3.jpg'
-import Kartonbardak4 from './Kartonbardak4.jpg'
+import Kartonbardak4 from './kartonbardak4.jpg'
 import Kartonbardak5 from './Kartonbardak5.jpg'
 
 
