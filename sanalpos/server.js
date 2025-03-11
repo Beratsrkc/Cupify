@@ -31,7 +31,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: ['http://localhost:5173', 'http://localhost:5174','https://cupify-admin.vercel.app', 'https://cupify-backend.vercel.app', 'https://cupify-frontend.vercel.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE' , 'UPDATE' ,'PATCH' ],
     allowedHeaders: ['Content-Type', 'Authorization', 'token'],
     credentials: true
