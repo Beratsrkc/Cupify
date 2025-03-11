@@ -1,7 +1,7 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { ShopContext } from '../context/ShopContext';
 import { Link } from 'react-router-dom';
-import { IoMdCheckmarkCircleOutline } from "react-icons/io";
+import { assets } from '../assets/assets';
 
 const generateSlug = (text) => {
   return text
@@ -17,25 +17,53 @@ const generateSlug = (text) => {
     .replace(/-+/g, "-");
 };
 
-const ProductItem = ({ id, images = [], name, newprice, price }) => {
-  const { currency, addToCart } = useContext(ShopContext);
+// Fiyat formatlama fonksiyonu
+const formatPrice = (price) => {
+  return new Intl.NumberFormat('tr-TR', {
+    style: 'decimal',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(price);
+};
+
+const ProductItem = ({ id, images = [], name, sizes, quantities, coverOptions }) => {
+  const { currency } = useContext(ShopContext);
   const imageUrl = images?.[0] || '/assets/default-image.jpg';
-  const [isHovered, setIsHovered] = useState(false);
-  const [isAdded, setIsAdded] = useState(false);
 
-  // İndirim yüzdesini hesapla
-  const discountPercentage = newprice > 0
-    ? Math.round(((price - newprice) / price) * 100)
-    : 0;
+  // Fiyat aralığını hesapla
+  const calculatePriceRange = () => {
+    if (!sizes || !quantities) return { minPrice: 0, maxPrice: 0 };
+  
+    let minPrice = Infinity;
+    let maxPrice = 0;
+  
+    sizes.forEach(size => {
+      quantities.forEach(quantity => {
+        const basePrice = size.price * quantity.label;
+        const coverPriceValue = coverOptions?.price || 0;
+  
+        // Minimum fiyat (kapak seçeneği olmadan)
+        const priceWithoutCover = basePrice;
+        if (priceWithoutCover < minPrice) minPrice = priceWithoutCover;
+  
+        // Maksimum fiyat (kapak seçeneği ile)
+        const priceWithCover = basePrice + (coverPriceValue * quantity.label); // Kapak fiyatını adetle çarp
+        if (priceWithCover > maxPrice) maxPrice = priceWithCover;
+      });
+    });
+  
+    return {
+      minPrice: minPrice === Infinity ? 0 : minPrice,
+      maxPrice,
+    };
+  };
 
-  const handleAddToCart = (e) => {
-    e.preventDefault();
-    addToCart(id, 1);
-    setIsAdded(true);
+  const { minPrice, maxPrice } = calculatePriceRange();
 
-    setTimeout(() => {
-      setIsAdded(false);
-    }, 1000);
+  // Ebat seçeneklerini formatla
+  const formatSizes = () => {
+    if (!sizes || sizes.length === 0) return "Ebat Seçeneği Yok";
+    return sizes.map(size => size.label).join(", ");
   };
 
   const productSlug = generateSlug(name);
@@ -44,42 +72,49 @@ const ProductItem = ({ id, images = [], name, newprice, price }) => {
     <Link
       className='text-gray-700 cursor-pointer relative'
       to={`/product/${productSlug}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onTouchStart={() => setIsHovered(true)}
-      onTouchEnd={() => setIsHovered(false)}
     >
-      <div className='flex flex-col items-center relative'>
-        <div className='w-full h-56 border rounded-sm overflow-hidden relative'>
-          {/* İndirim yüzdesi */}
-          {newprice > 0 && (
-            <div className='absolute top-0 right-0 bg-black text-white text-xs font-semibold px-2.5 py-2.5 '>
-              %{discountPercentage}
-            </div>
-          )}
+      <div className='flex flex-col relative'>
+        {/* Çapraz Desenli Arka Plan */}
+        <div
+          className='w-full h-72 border rounded-md overflow-hidden relative'
+          style={{
+            position: 'relative', // Konumlandırma için gerekli
+          }}
+        >
+          {/* Arka Plan Resmi ve Opaklık Katmanı */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundImage: `url(${assets.cupifybackground})`, // assets'ten resmi al
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              opacity: 0.5, // Opaklık: %80
+              zIndex: 1, // Arka plan resmi için zIndex: 1
+            }}
+          />
+          {/* Ürün görseli */}
           <img
-            className='w-full h-full object-contain hover:scale-110 transition-transform duration-300'
+            className='w-full h-full object-contain  hover:scale-110 transition-transform duration-300 relative z-10' // Ürün resmi için zIndex: 10
             src={imageUrl}
             alt={name}
           />
-          <button
-            onClick={handleAddToCart}
-            className={`absolute bottom-4 left-1/2 transform -translate-x-1/2 px-8 py-3 rounded-sm text-sm transition-all duration-500 
-              ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"} 
-              ${isAdded ? "bg-green-600 text-white" : "bg-black text-white hover:bg-gray-800"}`}
-          >
-            {isAdded ? <IoMdCheckmarkCircleOutline className="w-5 h-5 rounded-sm" /> : "Ekle"}
-          </button>
         </div>
-        <p className='pt-3 pb-1 text-sm'>{name}</p>
+        {/* Ürün İsmi */}
+        <p className='pt-3 pb-1 text-base text-gray-800'>{name}</p>
+        {/* Ebat seçenekleri */}
+        <p className='text-sm text-gray-500 pb-1'>{formatSizes()}</p>
+        {/* Fiyat */}
         <div className='flex gap-3'>
-          {newprice > 0 ? (
-            <>
-              <p className='text-sm font-medium text-gray-400 line-through'>{currency}{price}</p>
-              <p className='text-sm font-medium text-black'>{currency}{newprice}</p>
-            </>
+          {minPrice === maxPrice ? (
+            <p className='text-base font-medium text-black'>{currency}{formatPrice(minPrice)}</p>
           ) : (
-            <p className='text-sm font-medium text-gray-800'>{currency}{price}</p>
+            <p className='text-base font-medium text-black'>
+              {currency}{formatPrice(minPrice)} - {currency}{formatPrice(maxPrice)}
+            </p>
           )}
         </div>
       </div>

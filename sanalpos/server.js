@@ -9,6 +9,9 @@ import productRouter from './routes/productRoute.js';
 import cartRouter from './routes/cartRoute.js';
 import orderRouter from './routes/orderRoute.js';
 import morgan from 'morgan';
+import categoryRouter from './routes/categoryRouter.js';
+import imageRoutes from './routes/imageRouter.js';
+import blogRouter from './routes/blogRoutes.js';
 
 dotenv.config();
 
@@ -28,8 +31,8 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'https://sbf-tarim-admin.vercel.app', 'https://sbf-tarim-backend.vercel.app', 'https://sbf-tarim-frontend.vercel.app'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE' , 'UPDATE'],
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE' , 'UPDATE' ,'PATCH' ],
     allowedHeaders: ['Content-Type', 'Authorization', 'token'],
     credentials: true
 }));
@@ -188,12 +191,13 @@ app.get('/', (req, res) => {
     res.send('API is working');
 });
 
-// API endpoint'leri
 app.use('/api/user', userRouter);
 app.use('/api/product', productRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
-
+app.use('/api/category', categoryRouter);
+app.use('/api/images', imageRoutes);
+app.use("/api/blogs", blogRouter);
 // Veritabanı ve Cloudinary bağlantıları
 connectDB();
 connectCloudinary();

@@ -3,9 +3,9 @@ import { ShopContext } from '../context/ShopContext';
 import Title from './Title';
 const CartTotal = ({
   total = 0,
-  subtotalExcludingVAT,
-  vatAmount,
-  kdvDahil
+  subtotalExcludingVAT = 0,
+  vatAmount = 0,
+  kdvDahil = 0
 }) => {
   const { currency } = useContext(ShopContext);
 

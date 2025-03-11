@@ -8,7 +8,6 @@ import 'swiper/css/autoplay';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay } from 'swiper/modules';
 
-
 const LatestCollection = () => {
     const { products } = useContext(ShopContext);
     const [latestProduct, setLatestProduct] = useState([]);
@@ -18,19 +17,17 @@ const LatestCollection = () => {
         setLatestProduct(reversedProducts.slice(0, 15));
     }, [products]);
 
-
     return (
         <div className='my-10 relative'>
             <div className='text-center py-8 text-3xl'>
                 <Title text1={'SON'} text2={"EKLENENLER"} />
             </div>
 
-            {/* Swiper ile Ürünleri Göster */}
             <Swiper
                 key={latestProduct.length}
                 modules={[Pagination, Autoplay]}
-                spaceBetween={10}
-                slidesPerView={2}
+                spaceBetween={28}
+                slidesPerView={1} // Varsayılan olarak 1 slide göster
                 initialSlide={0}
                 pagination={{
                     clickable: true,
@@ -42,10 +39,14 @@ const LatestCollection = () => {
                 }}
                 loop={true}
                 breakpoints={{
-                    640: { slidesPerView: 3 },
-                    768: { slidesPerView: 4 },
-                    1024: { slidesPerView: 5 },
-                    1280: { slidesPerView: 6 },
+                    // 0px'den 640px'e kadar 1 slide göster
+                    0: { slidesPerView: 1 },
+                    // 640px'den 768px'e kadar 2 slide göster
+                    455: { slidesPerView: 2 },
+                    // 768px'den 1024px'e kadar 3 slide göster
+                    690: { slidesPerView: 3 },
+                    // 1024px'den 1280px'e kadar 4 slide göster
+                    1170: { slidesPerView: 4 },
                 }}
             >
                 {/* Pagination için div ekleyin */}

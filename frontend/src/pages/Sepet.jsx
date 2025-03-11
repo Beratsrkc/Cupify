@@ -19,10 +19,16 @@ const Cart = () => {
 
   useEffect(() => {
     const tempData = Object.keys(cartItems)
-      .filter(itemId => cartItems[itemId] > 0)
+      .filter(itemId => cartItems[itemId].quantity > 0)
       .map(itemId => ({
         _id: itemId,
-        quantity: cartItems[itemId]
+        quantity: cartItems[itemId].quantity,
+        selectedSize: cartItems[itemId].selectedSize,
+        selectedPrintingOption: cartItems[itemId].selectedPrintingOption,
+        selectedQuantity: cartItems[itemId].selectedQuantity,
+        selectedCoverOption: cartItems[itemId].selectedCoverOption,
+        totalPrice: cartItems[itemId].totalPrice,
+        image: cartItems[itemId].image,
       }));
     setCartData(tempData);
   }, [cartItems, products]);
@@ -33,7 +39,7 @@ const Cart = () => {
         <p className="text-lg sm:text-2xl font-semibold mb-4">Sepetinizde ürün bulunmamaktadır.</p>
         <button
           onClick={() => navigate('/urunler')}
-          className="bg-black text-white text-sm px-8 py-3"
+          className="bg-black text-white text-sm px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors"
         >
           Alışverişe Başla
         </button>
@@ -52,60 +58,68 @@ const Cart = () => {
           const productData = products.find(p => p._id === item._id);
           if (!productData) return null;
 
-          const productImage = productData.images?.[0] || productData.image?.[0] || assets.default_image;
+          const productImage = item.image || productData.images?.[0] || assets.default_image;
           const hasNewPrice = productData.newprice > 0;
 
           return (
-            <div key={index} className="py-4 border-t border-b text-gray-700 items-center gap-4">
+            <div key={index} className="py-4 border-t border-b text-gray-700">
               <div className="flex items-start gap-6">
                 <img
-                  className="w-16 sm:w-20"
+                  className="w-16 sm:w-32 h-32 object-cover rounded-lg"
                   src={productImage}
                   alt="product"
                 />
-                <div className="w-full">
+                <div className="w-full flex flex-col gap-2">
                   <p className="text-base sm:text-lg font-medium">{productData.name}</p>
-                  <div className="flex items-center gap-5 mt-2 justify-between">
-                    <div className="flex items-center gap-5 mt-2 w-full">
-                      {/* Fiyatlar için sabit genişlik */}
-                      <div className="flex items-center gap-2 w-1/2">
-                        {hasNewPrice ? (
-                          <>
-                          
-                            <p className="text-base sm:text-lg font-medium text-black">
-                              {currency}{productData.newprice}
-                            </p>
-                            <p className="text-base sm:text-lg font-medium text-gray-400 line-through">
-                              {currency}{productData.price}
-                            </p>
-                          </>
-                        ) : (
-                          <p className="text-base sm:text-lg font-medium text-black">
-                            {currency}{productData.price}
-                          </p>
-                        )}
-                      </div>
-                      {/* Input alanı için sabit genişlik */}
-                      <div className=" w-2/6 sm:w-1/6">
-                        <input
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value);
-                            if (value > 0) updateQuantity(item._id, value)
-                          }}
-                          className="border w-full px-2 py-1 text-center outline-none"
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                        />
-                      </div>
-                    </div>
-                    <img
-                      onClick={() => updateQuantity(item._id, 0)}
-                      className="w-4 mr-4 sm:w-5 cursor-pointer"
-                      src={assets.bin_icon}
-                      alt="Sil"
+                  <div className="flex flex-col gap-1">
+                    {/* Ebat Seçimi */}
+                    {item.selectedSize && (
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Ebat:</span> {item.selectedSize.label}
+                      </p>
+                    )}
+                    {/* Kapak Seçeneği */}
+                    {item.selectedCoverOption && (
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Kapak:</span> {item.selectedCoverOption}
+                      </p>
+                    )}
+                    {/* Baskı Seçeneği */}
+                    {item.selectedPrintingOption && (
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Baskı:</span> {item.selectedPrintingOption}
+                      </p>
+                    )}
+                    {/* Sipariş Miktarı */}
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Sipariş Miktarı:</span> {item.selectedQuantity} Adet
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-10">
+                  <div className="flex items-center gap-2">
+                    <p className="text-base sm:text-lg font-medium text-black">
+                      {currency}{item.totalPrice}
+                    </p>
+                  </div>
+                  <div className="w-20">
+                    <input
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (value > 0) updateQuantity(item._id, value);
+                      }}
+                      className="border w-full px-2 py-1 text-center outline-none rounded-lg"
+                      type="number"
+                      min="1"
+                      value={item.quantity}
                     />
                   </div>
+                  <img
+                    onClick={() => updateQuantity(item._id, 0)}
+                    className="w-5 h-5 cursor-pointer hover:opacity-75 transition-opacity"
+                    src={assets.bin_icon}
+                    alt="Sil"
+                  />
                 </div>
               </div>
             </div>
@@ -145,7 +159,7 @@ const Cart = () => {
             )}
             <button
               onClick={() => token ? navigate("/siparis") : setIsDialogOpen(true)}
-              className="bg-black text-white text-sm w-1/3 lg:px-2 lg:w-full my-2 lg:my-8 px-8 py-3"
+              className="bg-black text-white text-sm w-1/3 lg:px-2 lg:w-full my-2 lg:my-8 px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors"
             >
               ÖDEME
             </button>
@@ -170,13 +184,13 @@ const Cart = () => {
             <div className="flex justify-between gap-2">
               <button
                 onClick={() => navigate("/siparis")}
-                className="bg-black text-white text-sm px-8 py-3"
+                className="bg-black text-white text-sm px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors"
               >
                 Üye Olmadan Devam
               </button>
               <button
                 onClick={() => navigate("/giris")}
-                className="bg-black text-white text-sm px-8 py-3"
+                className="bg-black text-white text-sm px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors"
               >
                 Giriş Yap
               </button>

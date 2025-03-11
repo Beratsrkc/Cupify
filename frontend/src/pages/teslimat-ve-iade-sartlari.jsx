@@ -42,10 +42,10 @@ const TeslimatVeIade = () => {
           <h3 className="text-xl font-medium text-gray-800">İletişim Bilgileri</h3>
           <div className="bg-gray-100 p-4 rounded-lg">
             <p className="text-gray-700">
-              <strong>Şirket Ünvanı:</strong> SBF Tarım LTD.ŞTİ<br/>
+              <strong>Şirket Ünvanı:</strong> ŞİRKET ADI<br/>
               <strong>Adres:</strong> <br/>
-              <strong>E-posta:</strong> sbftarim34@gmail.com<br/>
-              <strong>Telefon:</strong> 05342015367<br/>
+              <strong>E-posta:</strong> MAİL<br/>
+              <strong>Telefon:</strong> TELEFON<br/>
             </p>
           </div>
         </div>
@@ -125,8 +125,8 @@ const TeslimatVeIade = () => {
       <section className="space-y-6 mt-8">
         <h2 className="text-2xl font-semibold text-gray-800">İLETİŞİM</h2>
         <p className="text-gray-700">
-          <strong>E-posta:</strong> sbftarim34@gmail.com<br/>
-          <strong>Telefon:</strong> 0534 201 53 67<br/>
+          <strong>E-posta:</strong> MAİL<br/>
+          <strong>Telefon:</strong> TELEFON<br/>
           <strong>Çalışma Saatleri:</strong> Hafta içi 09:00 - 18:00
         </p>
       </section>
@@ -134,7 +134,7 @@ const TeslimatVeIade = () => {
       {/* İmza Bölümü */}
       <div className="flex justify-between mt-8 border-t pt-4">
         <div>
-          <p className="font-semibold">SATICI: SBF TARIM LTD.ŞTİ</p>
+          <p className="font-semibold">SATICI: ŞİRKET ADI</p>
           <p className="text-sm text-gray-600">İmza/Mühür</p>
         </div>
         <div>

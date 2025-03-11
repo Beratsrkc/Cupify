@@ -20,6 +20,8 @@ import MesafeliSatisSozlesmesi from './pages/mesafeli-satis-sozlesmesi';
 import TeslimatVeIade from './pages/teslimat-ve-iade-sartlari';
 import ResetPassword from './pages/ResetPassword';
 import WhatsAppButton from './components/WhatsAppButton';
+import BlogDetail from './pages/BlogDetail';
+import BlogPage from './pages/BlogPage';
 
 // Scroll to top component
 const ScrollToTop = () => {
@@ -49,7 +51,21 @@ const App = () => {
   const showWhatsAppButton = !hiddenPages.includes(location.pathname) && !isProductPage;
 
   return (
-    <div className='px-4 dm:px-[5vw] md:px-[7vw] lg:px-[9vw]'>
+    <div>
+      {/* Navbar (her zaman container içinde) */}
+      <div className="container mx-auto px-4">
+        <Navbar />
+      </div>
+
+      {/* SearchBar (her zaman container içinde) */}
+      <div className="container mx-auto px-4">
+        <SearchBar />
+      </div>
+
+      {/* ScrollToTop (container dışında) */}
+      <ScrollToTop />
+
+      {/* ToastContainer (container dışında) */}
       <ToastContainer
         autoClose={1000}
         limit={5}
@@ -62,27 +78,43 @@ const App = () => {
         pauseOnHover={false}
         theme="light"
       />
-      <Navbar />
-      <SearchBar />
-      <ScrollToTop />
+
+      {/* İçerik (Contact sayfasında container dışında, diğer sayfalarda container içinde) */}
       <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path='/urunler' element={<Collection />} />
-        <Route path='/hakkimizda' element={<About />} />
-        <Route path='/iletisim' element={<Contact />} />
-        <Route path='/product/:slug' element={<Product />} />
-        <Route path='/sepet' element={<Cart />} />
-        <Route path='/giris' element={<Login />} />
-        <Route path="/ResetPassword" element={<ResetPassword />} />
-        <Route path='/siparis' element={<PlaceOrder />} />
-        <Route path='/orders' element={<Orders />} />
-        <Route path="/odeme" element={<Odeme />} />
-        <Route path="/gizlilik-sozlesmesi" element={<GizlilikSozlesmesi />} />
-        <Route path="/mesafeli-satis-sozlesmesi" element={<MesafeliSatisSozlesmesi />} />
-        <Route path="/teslimat-ve-iade-sartlari" element={<TeslimatVeIade />} />
+        <Route path="/iletisim" element={<Contact />} />
+        <Route
+          path="*"
+          element={
+            <div className="container mx-auto px-4">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/urunler" element={<Collection />} />
+                <Route path="/hakkimizda" element={<About />} />
+                <Route path="/product/:slug" element={<Product />} />
+                <Route path="/sepet" element={<Cart />} />
+                <Route path="/giris" element={<Login />} />
+                <Route path="/ResetPassword" element={<ResetPassword />} />
+                <Route path="/siparis" element={<PlaceOrder />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/odeme" element={<Odeme />} />
+                <Route path="/gizlilik-sozlesmesi" element={<GizlilikSozlesmesi />} />
+                <Route path="/mesafeli-satis-sozlesmesi" element={<MesafeliSatisSozlesmesi />} />
+                <Route path="/teslimat-ve-iade-sartlari" element={<TeslimatVeIade />} />
+                <Route path="/blog" element={<BlogPage />} />
+                <Route path="/blog/:slug" element={<BlogDetail />} />
+              </Routes>
+            </div>
+          }
+        />
       </Routes>
-      <Footer />
-      {showWhatsAppButton && <WhatsAppButton />} {/* Koşula göre WhatsAppButton'ı göster veya gizle */}
+
+      {/* Footer (her zaman container içinde) */}
+      <div className="container mx-auto px-4">
+        <Footer />
+      </div>
+
+      {/* WhatsAppButton (container dışında) */}
+      {showWhatsAppButton && <WhatsAppButton />}
     </div>
   );
 };

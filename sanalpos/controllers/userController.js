@@ -31,7 +31,7 @@ const sendResetEmail = async (email, resetLink) => {
                             Şifrenizi sıfırlamak için aşağıdaki butona tıklayın.
                         </p>
                         <div style="text-align: center; margin: 20px 0;">
-                            <a href="${resetLink}" style="background-color: #007bff; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">
+                            <a href="${resetLink}" style="background-color: #dc2626; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">
                                 Şifremi Sıfırla
                             </a>
                         </div>
@@ -40,7 +40,7 @@ const sendResetEmail = async (email, resetLink) => {
                         </p>
                         <p style="color: #777777; font-size: 14px; text-align: center;">
                             Teşekkürler,<br>
-                            <strong>SBF Tarım</strong>
+                            <strong>Cupify.com.tr</strong>
                         </p>
                     </div>
                 </div>
@@ -192,4 +192,53 @@ const adminLogin = async (req, res) => {
     }
 };
 
-export { loginUser, registerUser, adminLogin, forgotPassword, resetPassword };
+// İletişim formu için mail gönderme fonksiyonu
+const sendContactEmail = async (req, res) => {
+    try {
+        const { name, email, message } = req.body;
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER, // Gmail hesabınız
+                pass: process.env.EMAIL_PASSWORD, // Gmail şifreniz veya uygulama şifreniz
+            },
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: 'nikeflyinn@gmail.com', 
+            subject: 'İletişim Formu Mesajı',
+            html: `
+                <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                        <h1 style="color: #333333; text-align: center;">İletişim Formu Mesajı</h1>
+                        <p style="color: #555555; font-size: 16px;">
+                            <strong>Ad:</strong> ${name}
+                        </p>
+                        <p style="color: #555555; font-size: 16px;">
+                            <strong>E-posta:</strong> ${email}
+                        </p>
+                        <p style="color: #555555; font-size: 16px;">
+                            <strong>Mesaj:</strong> ${message}
+                        </p>
+                        <p style="color: #777777; font-size: 14px; text-align: center;">
+                            Teşekkürler,<br>
+                            <strong>Cupify.com.tr</strong>
+                        </p>
+                    </div>
+                </div>
+            `,
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.json({ success: true, message: 'Mesajınız başarıyla gönderildi.' });
+    } catch (error) {
+        console.error('Hata Oluştu:', error);
+        res.json({ success: false, message: 'Mesaj gönderilirken bir hata oluştu.' });
+    }
+};
+
+// Fonksiyonu export edin
+export { loginUser, registerUser, adminLogin, forgotPassword, resetPassword, sendContactEmail };

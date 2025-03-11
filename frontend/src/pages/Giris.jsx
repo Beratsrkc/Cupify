@@ -80,7 +80,7 @@ const Login = () => {
                         type="email"
                         required
                     />
-                    <button className='bg-black text-white font-light px-8 py-2 mt-4 w-full'>
+                    <button className='bg-red-600 text-white font-light px-8 py-2 mt-4 w-full'>
                         Bağlantı Gönder
                     </button>
                     <p 
@@ -142,7 +142,7 @@ const Login = () => {
                             </p>
                         )}
                     </div>
-                    <button className='bg-black text-white font-light px-8 py-2 mt-4 w-full'>
+                    <button className='bg-red-600 text-white font-light px-8 py-2 mt-4 w-full'>
                         {currentState === 'Giriş Yap' ? 'Giriş Yap' : 'Kayıt Ol'}
                     </button>
                 </>

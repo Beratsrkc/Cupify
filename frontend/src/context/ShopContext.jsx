@@ -7,19 +7,29 @@ export const ShopContext = createContext();
 
 const ShopContextProvider = (props) => {
   const currency = '₺';
-
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+
   const [cartItems, setCartItems] = useState(() => {
     const savedCart = localStorage.getItem('cart');
-    return savedCart ? JSON.parse(savedCart) : {};
+    try {
+      return savedCart ? JSON.parse(savedCart) : {};
+    } catch (error) {
+      console.error("Cart verisi bozuk, varsayılan değer kullanılıyor.");
+      return {}; // Bozuk veriyi temizle
+    }
   });
+
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]); // Kategoriler için state
+  const [isLoading, setIsLoading] = useState(true); // Yükleme durumu için state
+
   const [token, setToken] = useState(() => {
     return localStorage.getItem('token') || null;
   });
+
   const [userDetails, setUserDetails] = useState(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : {
@@ -32,19 +42,18 @@ const ShopContextProvider = (props) => {
       phone: '',
     };
   });
+
   const navigate = useNavigate();
 
-
+  // LocalStorage'a cartItems, userDetails ve token'ı kaydet
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
-
 
   useEffect(() => {
     localStorage.setItem('user', JSON.stringify(userDetails));
   }, [userDetails]);
 
-  
   useEffect(() => {
     if (token) {
       localStorage.setItem('token', token);
@@ -53,89 +62,25 @@ const ShopContextProvider = (props) => {
     }
   }, [token]);
 
-  const updateUserDetails = (updatedInfo) => {
-    setUserDetails((prevDetails) => ({
-      ...prevDetails,
-      ...updatedInfo,
-    }));
-  };
-
-  const addToCart = async (itemId, quantity = 1) => {
-    if (quantity <= 0) {
-      toast.error("Lütfen geçerli bir miktar girin.");
-      return;
-    }
-
-    let cartData = structuredClone(cartItems);
-    if (cartData[itemId]) {
-      cartData[itemId] += quantity;
-    } else {
-      cartData[itemId] = quantity;
-    }
-    setCartItems(cartData);
-
-    if (token) {
-      try {
-        await axios.post(
-          backendUrl + '/api/cart/add',
-          { itemId, quantity },
-          { headers: { token } }
-        );
-      } catch (error) {
-        toast.error(error.message);
+  // Kategorileri çek
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${backendUrl}/api/category/list`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.data.success) {
+        setCategories(response.data.categories);
+      } else {
+        toast.error("Kategoriler yüklenemedi");
       }
+    } catch (error) {
+      toast.error("Kategoriler yüklenirken hata oluştu");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const getCartCount = () => {
-    let totalCount = 0;
-    for (const itemId in cartItems) {
-      if (cartItems[itemId] > 0) {
-        totalCount += cartItems[itemId];
-      }
-    }
-    return totalCount;
-  };
-
-  const updateQuantity = async (itemId, quantity) => {
-    let cartData = structuredClone(cartItems);
-    cartData[itemId] = quantity;
-    setCartItems(cartData);
-
-    if (token) {
-      try {
-        await axios.post(backendUrl + '/api/cart/update', { itemId, quantity }, { headers: { token } });
-      } catch (error) {
-        toast.error(error.message);
-      }
-    }
-  };
-
-  const getCartAmount = () => {
-    let totalAmount = 0;
-  
-    for (const itemId in cartItems) {
-      let itemInfo = products.find((product) => product._id === itemId);
-      if (cartItems[itemId] > 0 && itemInfo) {
-        // Use newprice if it exists and is greater than 0, otherwise use price
-        const price = itemInfo.newprice > 0 ? itemInfo.newprice : itemInfo.price || 0;
-        const quantity = cartItems[itemId] || 0;
-  
-        if (!isNaN(price) && !isNaN(quantity)) {
-          totalAmount += price * quantity;
-        } else {
-          console.error(`Invalid price or quantity for Item ID: ${itemId}`);
-        }
-      }
-    }
-  
-  
-    return {
-      subtotal: totalAmount,
-      total: totalAmount,
-    };
-  };
-
+  // Ürünleri çek
   const getProductsData = async () => {
     try {
       const response = await axios.get(backendUrl + "/api/product/list");
@@ -149,6 +94,7 @@ const ShopContextProvider = (props) => {
     }
   };
 
+  // Kullanıcının sepetini çek
   const getUserCart = async (token) => {
     try {
       const response = await axios.post(backendUrl + '/api/cart/get', {}, { headers: { token } });
@@ -160,17 +106,105 @@ const ShopContextProvider = (props) => {
     }
   };
 
-  useEffect(() => {
-    getProductsData();
-  }, []);
+  // Kullanıcı bilgilerini güncelle
+  const updateUserDetails = (updatedInfo) => {
+    setUserDetails((prevDetails) => ({
+      ...prevDetails,
+      ...updatedInfo,
+    }));
+  };
 
-  useEffect(() => {
-    if (!token && localStorage.getItem('token')) {
-      setToken(localStorage.getItem('token'));
-      getUserCart(localStorage.getItem('token'));
+  // Sepete ürün ekle
+  const addToCart = async (item) => {
+    const { id, quantity, selectedSize, selectedPrintingOption, selectedCoverOption, totalPrice, image, selectedQuantity } = item;
+
+    if (quantity <= 0) {
+      toast.error("Lütfen geçerli bir miktar girin.");
+      return;
     }
-  }, [token]);
 
+    let cartData = structuredClone(cartItems);
+    const itemId = id.toString(); // id'yi string'e çevir
+    if (cartData[itemId]) {
+      // Eğer ürün sepette varsa, miktarı güncelle
+      cartData[itemId].quantity += quantity;
+    } else {
+      // Eğer ürün sepette yoksa, yeni bir ürün ekle
+      cartData[itemId] = {
+        quantity,
+        selectedQuantity,
+        selectedSize,
+        selectedPrintingOption,
+        selectedCoverOption,
+        totalPrice,
+        image,
+      };
+    }
+    setCartItems(cartData);
+
+    if (token) {
+      try {
+        await axios.post(
+          backendUrl + '/api/cart/add',
+          { itemId, quantity, selectedSize, selectedPrintingOption, selectedQuantity, selectedCoverOption, totalPrice, image },
+          { headers: { token } }
+        );
+      } catch (error) {
+        toast.error(error.message);
+      }
+    }
+  };
+
+  // Sepetteki ürün miktarını güncelle
+  const updateQuantity = async (itemId, quantity) => {
+    let cartData = structuredClone(cartItems);
+    if (cartData[itemId]) {
+      cartData[itemId].quantity = quantity;
+      setCartItems(cartData);
+
+      if (token) {
+        try {
+          await axios.post(
+            backendUrl + '/api/cart/update',
+            { itemId, quantity },
+            { headers: { token } }
+          );
+        } catch (error) {
+          toast.error(error.message);
+        }
+      }
+    }
+  };
+
+  // Sepet toplamını hesapla
+  const getCartAmount = () => {
+    let totalAmount = 0;
+
+    for (const itemId in cartItems) {
+      const item = cartItems[itemId];
+      if (item.quantity > 0) {
+        totalAmount += item.totalPrice * item.quantity;
+      }
+    }
+
+    return {
+      subtotal: totalAmount,
+      total: totalAmount,
+    };
+  };
+
+  // Sepetteki ürün sayısını hesapla
+  const getCartCount = () => {
+    let totalCount = 0;
+    for (const itemId in cartItems) {
+      if (cartItems[itemId].quantity > 0) {
+        totalCount += cartItems[itemId].quantity;
+      }
+    }
+    return totalCount;
+  };
+
+  // Çıkış yap
   const logout = () => {
     localStorage.removeItem('cart');
     localStorage.removeItem('user');
@@ -189,8 +223,25 @@ const ShopContextProvider = (props) => {
     navigate('/');
   };
 
+  // İlk yüklemede kategorileri ve ürünleri çek
+  useEffect(() => {
+    fetchCategories();
+    getProductsData();
+  }, []);
+
+  // Token değiştiğinde kullanıcının sepetini çek
+  useEffect(() => {
+    if (!token && localStorage.getItem('token')) {
+      setToken(localStorage.getItem('token'));
+      getUserCart(localStorage.getItem('token'));
+    }
+  }, [token]);
+
+  // Context değerleri
   const value = {
     products,
+    categories,
+    isLoading,
     currency,
     search,
     setSearch,

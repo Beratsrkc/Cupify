@@ -25,13 +25,13 @@ const MesafeliSatisSozlesmesi = () => {
           <div>
             <h3 className="text-xl font-medium text-gray-800">SATICI</h3>
             <p className="text-gray-700">
-              <strong>Ad-Soyad:</strong> SBF TARIM LTD.ŞTİ
+              <strong>Ad-Soyad:</strong> ŞİRKET ADI
               <br />
               <strong>Adres:</strong> [Şirket Adresi]
               <br />
-              <strong>Telefon:</strong> 05342015367
+              <strong>Telefon:</strong> TELEFON
               <br />
-              <strong>E-posta:</strong> sbftarim34@gmail.com
+              <strong>E-posta:</strong> MAİL
             </p>
           </div>
         </div>
@@ -71,10 +71,10 @@ const MesafeliSatisSozlesmesi = () => {
       <section className="space-y-6 mt-8">
         <h2 className="text-2xl font-semibold text-gray-800">4. Satıcı Bilgileri</h2>
         <ul className="list-disc pl-5 space-y-2 text-gray-700">
-          <li><strong>Ünvanı:</strong> SBF TARIM LTD.ŞTİ</li>
+          <li><strong>Ünvanı:</strong> ŞİRKET ADI</li>
           <li><strong>Adres:</strong> [Şirket Adresi]</li>
-          <li><strong>Telefon:</strong> 05342015367</li>
-          <li><strong>E-posta:</strong> sbftarim34@gmail.com</li>
+          <li><strong>Telefon:</strong> TELEFON</li>
+          <li><strong>E-posta:</strong> MAİL</li>
         </ul>
       </section>
 
@@ -171,7 +171,7 @@ const MesafeliSatisSozlesmesi = () => {
       {/* İmza Bölümü */}
       <div className="flex justify-between mt-8 border-t pt-4">
         <div>
-          <p className="font-semibold">SATICI: SBF TARIM LTD.ŞTİ</p>
+          <p className="font-semibold">SATICI: ŞİRKET ADI</p>
         </div>
         <div>
           <p className="font-semibold">ALICI: [ALICI Ad-Soyad]</p>

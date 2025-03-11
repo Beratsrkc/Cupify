@@ -3,8 +3,8 @@ import React from 'react';
 import { FaWhatsapp } from 'react-icons/fa'; // WhatsApp ikonu için react-icons kullanıyoruz
 
 const WhatsAppButton = () => {
-  const phoneNumber = '+905342015367'; // WhatsApp'a yönlendirilecek telefon numarası
-  const message = 'Merhaba, sbftarim.com sitesinden ulaşıyorum.'; // Otomatik gönderilecek mesaj
+  const phoneNumber = '+905318364465'; // WhatsApp'a yönlendirilecek telefon numarası
+  const message = 'Merhaba, Cupify.com.tr sitesinden ulaşıyorum.'; // Otomatik gönderilecek mesaj
 
   const handleClick = () => {
     const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;

@@ -11,7 +11,7 @@ const GizlilikSozlesmesi = () => {
       <section className="space-y-6">
         <h2 className="text-2xl font-semibold text-gray-800">1. Giriş</h2>
         <p className="text-gray-700">
-          SBF Tarım olarak, kullanıcılarımızın kişisel bilgilerini korumaya büyük önem veriyoruz. Bu gizlilik politikası, kullanıcılarımızın bilgilerini nasıl topladığımız, kullandığımız ve koruduğumuz konusunda sizi bilgilendirecektir.
+          Cupify olarak, kullanıcılarımızın kişisel bilgilerini korumaya büyük önem veriyoruz. Bu gizlilik politikası, kullanıcılarımızın bilgilerini nasıl topladığımız, kullandığımız ve koruduğumuz konusunda sizi bilgilendirecektir.
         </p>
       </section>
 
@@ -43,7 +43,7 @@ const GizlilikSozlesmesi = () => {
       <section className="space-y-6 mt-8">
         <h2 className="text-2xl font-semibold text-gray-800">5. Bilgilerin Paylaşılması</h2>
         <p className="text-gray-700">
-          SBF Tarım, kullanıcı bilgilerini üçüncü şahıslarla paylaşmaz, satmaz veya kiralamaz. Ancak, yasal yükümlülükler nedeniyle, yetkili mercilere bilgilerinizi sağlama hakkımız saklıdır.
+          Cupify, kullanıcı bilgilerini üçüncü şahıslarla paylaşmaz, satmaz veya kiralamaz. Ancak, yasal yükümlülükler nedeniyle, yetkili mercilere bilgilerinizi sağlama hakkımız saklıdır.
         </p>
       </section>
 
@@ -77,16 +77,16 @@ const GizlilikSozlesmesi = () => {
         <p className="text-gray-700">
           Gizlilik politikası hakkında sorularınız varsa, bizimle aşağıdaki iletişim kanallarından iletişime geçebilirsiniz:
           <br />
-          <strong>E-posta:</strong> sbftarim34@gmail.com
+          <strong>E-posta:</strong> mail
           <br />
-          <strong>Telefon:</strong> 0534 201 53 67
+          <strong>Telefon:</strong> telefon
         </p>
       </section>
 
       {/* İmza Bölümü */}
       <div className="flex justify-between mt-8 border-t pt-4">
         <div>
-          <p className="font-semibold">SATICI: SBF TARIM LTD.ŞTİ</p>
+          <p className="font-semibold">SATICI: [ŞİRKET ADI]</p>
         </div>
         <div>
           <p className="font-semibold">ALICI: [ALICI Ad-Soyad]</p>

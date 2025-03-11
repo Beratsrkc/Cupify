@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 const Hero = () => {
     const navigate = useNavigate();
 
-
     const settings = {
         dots: true,
         infinite: true,
@@ -50,51 +49,35 @@ const Hero = () => {
     const slides = [
         {
             id: 1,
-            image: assets.Slider1,
-            title: 'Çapa Makinesi Yedek Parçaları',
-            subtitle: 'En kaliteli çapa makinesi yedek parçaları burada!',
-            buttonText: 'Hemen İncele',
+            image: assets.Kartonbardak,
+            title: 'Özel Baskılı Karton Bardaklar',
+            subtitle: 'Markanızı özel tasarımlarla öne çıkarın!',
+            buttonText: 'Ürünleri İncele',
             category: '',
         },
         {
             id: 2,
-            image: assets.Slider2,
-            title: 'Tel Grubu Yedek Parçaları',
-            subtitle: 'Tel grubu yedek parçalarında özel indirimler!',
-            buttonText: 'Şimdi Al',
-            category: 'Tel-Grubu',
+            image: assets.Kartonbardak2,
+            title: 'Çevre Dostu Ambalajlar',
+            subtitle: 'Geri dönüştürülebilir ve şık ambalaj çözümleri.',
+            buttonText: 'Hemen Sipariş Ver',
+            category: '',
         },
         {
             id: 3,
-            image: assets.Slider3,
-            title: 'Manet ve Gaz Kolları',
-            subtitle: 'Manet ve Gaz Kollarında sınırlı süreli indirimler!',
+            image: assets.Kartonbardak3,
+            title: 'Şık ve Fonksiyonel Tasarımlar',
+            subtitle: 'İhtiyaçlarınıza özel çözümler sunuyoruz.',
             buttonText: 'Detayları Gör',
-            category: 'Manet-ve-Gaz-Kolu',
+            category: '',
         },
         {
             id: 4,
-            image: assets.Slider4, // Bu resmi siz ekleyeceksiniz
-            title: '2025’e Özel İndirimler!',
-            subtitle: '2025’e kadar geçerli özel fırsatları kaçırma!',
-            buttonText: '', // Buton yok
-            category: '', // Buton yok
-        },
-        {
-            id: 5,
-            image: assets.Slider5, // Bu resmi siz ekleyeceksiniz
-            title: 'Sınırlı Stok!',
-            subtitle: 'Stoklar tükenmeden avantajlı fırsatları yakala!',
-            buttonText: '', // Buton yok
-            category: '', // Buton yok
-        },
-        {
-            id: 6,
-            image: assets.Slider6, // Bu resmi siz ekleyeceksiniz
-            title: 'Yeni Yıl Fırsatları',
-            subtitle: 'Yeni yıla özel indirimlerle tanışın!',
-            buttonText: '', // Buton yok
-            category: '', // Buton yok
+            image: assets.Kartonbardak,
+            title: 'Hızlı Teslimat ve Uygun Fiyatlar',
+            subtitle: 'Siparişleriniz hızlı ve güvenilir bir şekilde teslim edilir.',
+            buttonText: 'Teklif Al',
+            category: '',
         },
     ];
 
@@ -108,17 +91,17 @@ const Hero = () => {
                             alt={`${slide.title} - ${slide.subtitle}`}
                             className="w-full h-full object-cover rounded-lg"
                         />
-                        <div className="absolute inset-0 flex flex-col justify-center items-start text-white p-6 sm:p-10 md:p-16 lg:p-20 bg-black bg-opacity-40" style={{ zIndex: 1 }}>
-                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase">
+                        <div className="absolute inset-0 flex flex-col justify-center items-center text-white p-6 sm:p-10 md:p-16 lg:p-20 bg-black bg-opacity-10" style={{ zIndex: 1 }}>
+                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase text-center font-poppins">
                                 {slide.title}
                             </h1>
-                            <p className="text-lg sm:text-xl md:text-2xl mt-2 sm:mt-4">
+                            <p className="text-lg sm:text-xl md:text-2xl mt-2 sm:mt-4 text-center font-open-sans">
                                 {slide.subtitle}
                             </p>
                             {slide.buttonText && (
                                 <button
                                     onClick={() => handleSeeAllClick(slide.category)}
-                                    className="mt-4 sm:mt-6 px-6 py-2 sm:px-8 sm:py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition duration-300"
+                                    className="mt-4 sm:mt-6 px-6 py-2 sm:px-8 sm:py-3 bg-red-500     text-white font-semibold rounded-full hover:bg-gray-200 transition duration-300 shadow-lg"
                                 >
                                     {slide.buttonText}
                                 </button>

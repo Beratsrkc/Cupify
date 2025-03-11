@@ -1,99 +1,74 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { ShopContext } from '../context/ShopContext';
-import Title from './Title';
-import ProductItem from './ProductItem';
-import { useNavigate } from 'react-router-dom';
-import { Swiper, SwiperSlide, useSwiper } from 'swiper/react';
-import { Autoplay, Pagination } from 'swiper/modules';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import 'swiper/css/autoplay';
-import 'swiper/css';
-import 'swiper/css/pagination';
+import { assets } from '../assets/assets';
 
-const ManetGrubu = () => {
-  const { products } = useContext(ShopContext);
-  const [ManetGrubuProducts, setManetGrubuProducts] = useState([]);
-  const [swiperInstance, setSwiperInstance] = useState(null);
-  const navigate = useNavigate();
+const CategoryProductPage = () => {
+  const { products, isLoading } = useContext(ShopContext); // ShopContext'ten ürünleri ve yükleme durumunu al
+  const [categoryProducts, setCategoryProducts] = useState([]);
+  const categoryId = '67b12a9e9c5c67ea52545c93'; // Sabit kategori ID'si
 
+  // Kategoriye göre ürünleri filtrele
   useEffect(() => {
-    const filteredProducts = products.filter(item => item.category === 'Manet-ve-Gaz-Kolu');
-    setManetGrubuProducts(filteredProducts.slice(0, 15));
-  }, [products]);
+    if (!isLoading && products.length > 0) {
+      const filtered = products.filter((product) => {
+        // Eğer category bir obje ise:
+        if (typeof product.category === 'object' && product.category !== null) {
+          return product.category._id === categoryId;
+        }
+        // Eğer category bir string ise:
+        return product.category === categoryId;
+      });
+      setCategoryProducts(filtered);
+      console.log("Filtrelenmiş Ürünler:", filtered); // Hata ayıklama için
+    }
+  }, [products, isLoading]);
 
-  const handleSeeAllClick = () => {
-    navigate('/urunler?category=Manet-ve-Gaz-Kolu');
-  };
+  // Kategori resmi ve adı
+  const categoryImage = assets.bardakresim3; // Kategori resmi
+  const categoryName = 'Ambalaj Ürünleri'; // Kategori adı
+
+  // Eğer veriler henüz yüklenmemişse yükleme durumu göster
+  if (isLoading) {
+    return <div>Yükleniyor...</div>;
+  }
 
   return (
-    <div className='my-10 relative'>
-      <div className='my-10'>
-        <div className='flex justify-between items-center text-3xl py-2'>
-          <Title text1={"MANET VE"} text2={"GAZ KOLLARI"} />
-
-          {/* TÜMÜNÜ GÖR ve Gezinme Butonları */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleSeeAllClick}
-              className="text-xs sm:text-sm md:text-base text-black cursor-pointer px-3 py-1 sm:px-4 sm:py-2 text-center rounded-md hover:bg-gray-100 transition"
-            >
-              TÜMÜNÜ GÖR
-            </button>
-
-            {/* Özel Gezinme Butonları */}
-            <div className="flex gap-1">
-              <button
-                onClick={() => swiperInstance?.slidePrev()}
-                className="bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg border border-gray-200 hover:bg-gray-100 transition-all"
-              >
-                <FaChevronLeft className="text-gray-700 text-sm" />
-              </button>
-              <button
-                onClick={() => swiperInstance?.slideNext()}
-                className="bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg border border-gray-200 hover:bg-gray-100 transition-all"
-              >
-                <FaChevronRight className="text-gray-700 text-sm" />
-              </button>
-            </div>
-          </div>
+    <div className="my-10 px-4">
+      <h2 className="text-3xl font-bold text-center mb-6">{categoryName}</h2>
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* Sol Taraf: Kategori Resmi */}
+        <div className="md:w-1/3">
+          <img
+            src={categoryImage}
+            alt={categoryName}
+            className="w-full h-auto"
+          />
         </div>
 
-        <hr className="border-t-2 border-gray-300" />
+        {/* Sağ Taraf: Ürün Listesi */}
+        <div className="md:w-2/3">
+          <h3 className="text-xl font-semibold mb-4">Ürünler</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {categoryProducts.map((product) => (
+              <div
+                key={product._id}
+                className="bg-white"
+              >
+                <img
+                  src={product.images[0]} // Ürün resmi
+                  alt={product.name}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-2">
+                  <h4 className="text-lg font-medium">{product.name}</h4>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-
-      {/* Swiper */}
-      <Swiper
-        key={ManetGrubuProducts.length}
-        onSwiper={setSwiperInstance}
-        modules={[Pagination, Autoplay]}
-        spaceBetween={10}
-        slidesPerView={2}
-        pagination={{
-          clickable: true,
-          el: '.custom-swiper-pagination',
-        }}
-        autoplay={{
-          delay: 3000,
-          disableOnInteraction: false,
-        }}
-        loop={true}
-        breakpoints={{
-          640: { slidesPerView: 3 },
-          768: { slidesPerView: 4 },
-          1024: { slidesPerView: 5 },
-          1280: { slidesPerView: 6 },
-        }}
-      >
-        <div className="custom-swiper-pagination" />
-
-        {ManetGrubuProducts.map((item, index) => (
-          <SwiperSlide key={index}>
-            <ProductItem {...item} />
-          </SwiperSlide>
-        ))}
-      </Swiper>
     </div>
   );
 };
 
-export default ManetGrubu;
+export default CategoryProductPage;

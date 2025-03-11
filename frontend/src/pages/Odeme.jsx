@@ -272,29 +272,40 @@ const Odeme = () => {
         const basketItems = Object.keys(cartItems)
             .map((itemId) => {
                 const productData = products.find((product) => product._id === itemId);
-                if (!productData || (!productData.price && !productData.newprice) || (productData.price <= 0 && productData.newprice <= 0)) {
-                    return null; // Geçersiz ürünleri atla
-                }
+            
 
-                const price = productData.newprice > 0 ? productData.newprice : productData.price;
-                const itemQuantity = cartItems[itemId];
-                const itemPrice = (price * itemQuantity).toFixed(2);
-
+           
+                const itemQuantity = cartItems[itemId].quantity;
+                const itemPrice = (cartItems[itemId].totalPrice * itemQuantity).toFixed(2);
+                const name =productData.name
+                const selectedCoverOption = cartItems[itemId].selectedCoverOption;
+                const selectedPrintingOption = cartItems[itemId].selectedPrintingOption;
+                const selectedQuantity = cartItems[itemId].selectedQuantity;
+                const selectedSize = cartItems[itemId].selectedSize.label;
                 if (parseFloat(itemPrice) <= 0) {
                     return null; // Geçersiz fiyatları atla
                 }
 
                 return {
                     id: itemId,
-                    name: productData.name,
+                    name: name,
                     category1: 'DefaultCategory',
                     category2: 'DefaultSubCategory',
                     itemType: 'PHYSICAL',
                     price: itemPrice,
                     quantity: itemQuantity,
+                    size:selectedSize,
+                    selectedQuantity:selectedQuantity,
+                    baski:selectedPrintingOption,
+                    kapak:selectedCoverOption
+
                 };
+                
             })
             .filter((item) => item !== null); // Null olanları filtrele
+            console.log(cartItems);
+            console.log(basketItems);
+            
 
         const paidPrice = selectedInstallment === 1
             ? subtotal
@@ -671,10 +682,10 @@ const Odeme = () => {
                                                 <div>
                                                     <h4 className="font-semibold mb-2">2. SATICI BİLGİLERİ</h4>
                                                     <ul className="list-disc pl-5">
-                                                        <li>Ünvanı: SBF TARIM LTD.ŞTİ</li>
+                                                        <li>Ünvanı: ŞİRKET ADI</li>
                                                         <li>Adres: </li>
-                                                        <li>Telefon: 05342015367</li>
-                                                        <li>Eposta: sbftarim34@gmail.com</li>
+                                                        <li>Telefon: TELEFON</li>
+                                                        <li>Eposta:MAİL</li>
                                                     </ul>
                                                 </div>
 
@@ -780,7 +791,7 @@ const Odeme = () => {
                                                 {/* SATICI ve ALICI İMZA */}
                                                 <div className="flex justify-between mt-8">
                                                     <div>
-                                                        <p className="font-semibold">SATICI: SBF TARIM LTD.ŞTİ</p>
+                                                        <p className="font-semibold">SATICI: ŞİRKET ADI</p>
 
                                                     </div>
                                                     <div>
@@ -819,10 +830,10 @@ const Odeme = () => {
                                                     <div className="mb-4">
                                                         <h5 className="font-medium">SATICI:</h5>
                                                         <ul className="list-disc pl-5">
-                                                            <li>Ünvanı: SBF TARIM LTD.ŞTİ</li>
+                                                            <li>Ünvanı:ŞİRKET ADI</li>
                                                             <li>Adres: [Şirket Adresiniz]</li>
-                                                            <li>Telefon: 05342015367</li>
-                                                            <li>E-mail: sbftarim34@gmail.com</li>
+                                                            <li>Telefon: TELEFON</li>
+                                                            <li>E-mail: MAİL</li>
                                                         </ul>
                                                     </div>
 
@@ -891,7 +902,7 @@ const Odeme = () => {
                                                 <div>
                                                     <h4 className="font-semibold mb-2">MADDE 4 - GENEL HÜKÜMLER</h4>
                                                     <ol className="list-decimal pl-5 space-y-4">
-                                                        <p class="mb-2">4.1- ALICI, www.sbftarim.com internet sitesinde sözleşme konusu ürünün temel nitelikleri, satış fiyatı ve ödeme şekli ile teslimata ilişkin ön bilgileri okuyup bilgi sahibi olduğunu ve elektronik ortamda gerekli teyidi verdiğini beyan eder.</p>
+                                                        <p class="mb-2">4.1- ALICI, www.cupify.com.tr internet sitesinde sözleşme konusu ürünün temel nitelikleri, satış fiyatı ve ödeme şekli ile teslimata ilişkin ön bilgileri okuyup bilgi sahibi olduğunu ve elektronik ortamda gerekli teyidi verdiğini beyan eder.</p>
 
                                                         <p class="mb-2">4.2- Sözleşme konusu ürün, yasal 30 günlük süreyi aşmamak koşulu ile her bir ürün için ALICI'nın yerleşim yerinin uzaklığına bağlı olarak internet sitesinde ön bilgiler içinde açıklanan süre içinde ALICI veya gösterdiği adresteki kişi/kuruluşa teslim edilir.</p>
 
@@ -940,7 +951,7 @@ const Odeme = () => {
                                                 {/* İMZA BÖLÜMÜ */}
                                                 <div className="flex justify-between mt-8 border-t pt-4">
                                                     <div>
-                                                        <p className="font-semibold">SATICI: SBF TARIM LTD.ŞTİ</p>
+                                                        <p className="font-semibold">SATICI: ŞİRKET ADI</p>
                                                     </div>
                                                     <div>
                                                         <p className="font-semibold">ALICI: {userDetails?.firstName} {userDetails?.lastName}</p>
@@ -974,7 +985,7 @@ const Odeme = () => {
                                                 <div>
                                                     <h4 className="font-semibold mb-2">Sayın Müşterilerimiz,</h4>
                                                     <p>
-                                                        SBF TARIM LTD.ŞTİ ("Şirket") olarak kişisel verilerinizin korunmasına büyük önem veriyoruz.
+                                                    ŞİRKET ADI ("Şirket") olarak kişisel verilerinizin korunmasına büyük önem veriyoruz.
                                                         6698 sayılı KVKK uyarınca sizleri bilgilendirmek isteriz.
                                                     </p>
                                                 </div>
@@ -1024,10 +1035,10 @@ const Odeme = () => {
                                                 {/* İletişim */}
                                                 <div className="border-t pt-4">
                                                     <h4 className="font-semibold mb-2">İLETİŞİM</h4>
-                                                    <p>Şirket Ünvanı: SBF TARIM LTD.ŞTİ</p>
+                                                    <p>Şirket Ünvanı: ŞİRKET ADI</p>
                                                     <p>Adres: [Şirket Adresiniz]</p>
-                                                    <p>Telefon: 05342015367</p>
-                                                    <p>E-posta: sbftarim34@gmail.com</p>
+                                                    <p>Telefon: TELEFON</p>
+                                                    <p>E-posta: MAİL</p>
                                                 </div>
                                             </motion.div>
                                         )}

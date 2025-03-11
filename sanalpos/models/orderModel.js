@@ -19,6 +19,10 @@ const orderSchema = new mongoose.Schema({
             name: String,
             price: Number,
             quantity: Number,
+            kapak:String,
+            baski:String,
+            selectedQuantity:Number,
+            size:String,
         }
     ],
     amount: {
