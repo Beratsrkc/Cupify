@@ -14,7 +14,6 @@ const Collection = () => {
     const [categories, setCategories] = useState([]);
     const [selectedCategories, setSelectedCategories] = useState([]); // Seçilen kategoriler
     const [selectedSubCategories, setSelectedSubCategories] = useState([]); // Seçilen alt kategoriler
-    const [sortType, setSortType] = useState('varsayilan');
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -146,9 +145,7 @@ const Collection = () => {
         }
     }, [selectedCategories, selectedSubCategories, search, showSearch, products, isLoading]);
 
-    useEffect(() => {
-        sortProduct();
-    }, [sortType]);
+
 
     useEffect(() => {
         if (!isLoading) {
@@ -215,7 +212,10 @@ const Collection = () => {
             {/* Right Side */}
             <div className='flex-1'>
               
-
+            <div className='flex justify-between text-base sm:text-2xl mb-4'>
+                    <Title text1={'TÜM'} text2={'ÜRÜNLER'} />
+                   
+                </div>
                 {/* Ürünleri Listele */}
                 <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 gap-y-6'>
                     {currentItems.map((item, index) => (
