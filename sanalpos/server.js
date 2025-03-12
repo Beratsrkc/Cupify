@@ -35,6 +35,8 @@ app.use(cors({
         'http://localhost:5173', 
         'http://localhost:5174',
         'https://cupify-admin.vercel.app', 
+        'https://cupify.com.tr', 
+        'https://cupify.com.tr/admin', 
         'https://cupify-backend.vercel.app', 
         'https://cupify-eight.vercel.app' 
     ],
