@@ -124,30 +124,7 @@ const Collection = () => {
     };
 
     // Sıralama işlemi
-    const sortProduct = () => {
-        let fpCopy = [...filterProducts];
-
-        switch (sortType) {
-            case 'dusuk-buyuk':
-                fpCopy.sort((a, b) => {
-                    const priceA = a.newprice > 0 ? a.newprice : a.price;
-                    const priceB = b.newprice > 0 ? b.newprice : b.price;
-                    return priceA - priceB;
-                });
-                break;
-            case 'buyuk-dusuk':
-                fpCopy.sort((a, b) => {
-                    const priceA = a.newprice > 0 ? a.newprice : a.price;
-                    const priceB = b.newprice > 0 ? b.newprice : b.price;
-                    return priceB - priceA;
-                });
-                break;
-            default:
-                break;
-        }
-
-        setFilterProducts(fpCopy);  // Sıralanmış ürünleri state'e kaydet
-    };
+    
 
     // Pagination için ürünleri dilimle
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -237,15 +214,7 @@ const Collection = () => {
 
             {/* Right Side */}
             <div className='flex-1'>
-                <div className='flex justify-between text-base sm:text-2xl mb-4'>
-                    <Title text1={'TÜM'} text2={'ÜRÜNLER'} />
-                    {/* Sıralama Seçeneği */}
-                    <select onChange={(e) => setSortType(e.target.value)} className='border-2 border-gray-300 text-sm px-2 outline-none'>
-                        <option value="varsayilan">Sırala: Varsayılan</option>
-                        <option value="dusuk-buyuk">Sırala: Düşükten Büyüğe</option>
-                        <option value="buyuk-dusuk">Sırala: Büyükten Küçüğe</option>
-                    </select>
-                </div>
+              
 
                 {/* Ürünleri Listele */}
                 <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 gap-y-6'>
