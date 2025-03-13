@@ -6,7 +6,7 @@ import 'swiper/css/autoplay';
 import { Autoplay } from 'swiper/modules';
 import { assets } from '../assets/assets';
 import Title from './Title';
-
+    
 const CategorySlider = () => {
     const navigate = useNavigate();
 

@@ -28,7 +28,7 @@ const iyzipay = new Iyzipay({
 
 // Express app oluşturma
 const app = express();
-
+    
 // Middleware
 app.use(cors({
     origin: [

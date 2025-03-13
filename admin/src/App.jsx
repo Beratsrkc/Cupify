@@ -9,7 +9,7 @@ import Login from './compoments/Login';
 import { ToastContainer } from 'react-toastify';
 import AddImage from './pages/AddImage';
 import BlogManagement from './pages/BlogManagement';
-
+  
 export const backendUrl = import.meta.env.VITE_BACKEND_URL;
 export const currency = '₺';
 
