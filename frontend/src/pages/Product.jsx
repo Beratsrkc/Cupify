@@ -82,8 +82,7 @@ const Product = () => {
         totalPrice: totalPrice * cartQuantity,
         image: productData.images?.[0],
       };
-
-
+  
       addToCart(cartItem);
       setIsAdded(true);
       setTimeout(() => setIsAdded(false), 1000);

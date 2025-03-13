@@ -9,7 +9,7 @@ const ShopContextProvider = (props) => {
   const currency = '₺';
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const generateCartItemKey = (item) => {
-    return `${item.id}-${item.selectedSize.label}-${item.selectedPrintingOption}-${item.selectedCoverOption}`;
+    return `${item.id}-${item.selectedSize.label}-${item.selectedPrintingOption}-${item.selectedCoverOption}-${item.selectedQuantity}`;
   };
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
