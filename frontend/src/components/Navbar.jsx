@@ -2,19 +2,19 @@ import React, { useContext, useState, useEffect, useRef } from 'react';
 import { assets } from '../assets/assets';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { ShopContext } from '../context/ShopContext';
-import { IoIosArrowDown } from "react-icons/io";
-import { IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowDown, IoIosArrowForward } from "react-icons/io";
 import { GrSearch } from "react-icons/gr";
+import ProfileDropdown from './ProfileDropdown';
+
+
 const Navbar = () => {
     const [visible, setVisible] = useState(false);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
     const [expandedCategory, setExpandedCategory] = useState(null);
     const [expandedMenu, setExpandedMenu] = useState(null);
-    const dropdownRef = useRef(null);
     const searchRef = useRef(null);
     const navigate = useNavigate();
 
@@ -24,28 +24,11 @@ const Navbar = () => {
     const cartTotal = getCartAmount().total;
 
     const logout = () => {
-        navigate('/giris');
         localStorage.removeItem('token');
         setToken('');
         setCartItems({});
+        navigate('/giris');
     };
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsDropdownOpen(false);
-                setIsCategoriesOpen(false);
-            }
-            if (searchRef.current && !searchRef.current.contains(event.target)) {
-                setShowSearchResults(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
 
     useEffect(() => {
         if (searchQuery.trim() === '') {
@@ -68,9 +51,9 @@ const Navbar = () => {
         navigate(`/product/${slug}`);
         setSearchQuery('');
         setShowSearchResults(false);
-        setIsCategoriesOpen(false); // Kategoriler menüsünü kapat
-        setExpandedCategory(null); // Açık olan kategoriyi kapat
-        setExpandedMenu(null); // Açık olan menüyü kapat
+        setIsCategoriesOpen(false);
+        setExpandedCategory(null);
+        setExpandedMenu(null);
     };
 
     const truncateDescription = (description, maxLength = 50) => {
@@ -112,9 +95,9 @@ const Navbar = () => {
 
     const handleCategoryClick = (categoryId, subCategory) => {
         navigate(`/urunler?category=${categoryId}&subCategory=${subCategory}`);
-        setIsCategoriesOpen(false); // Kategoriler menüsünü kapat
-        setExpandedCategory(null); // Açık olan kategoriyi kapat
-        setExpandedMenu(null); // Açık olan menüyü kapat
+        setIsCategoriesOpen(false);
+        setExpandedCategory(null);
+        setExpandedMenu(null);
     };
 
     return (
@@ -147,50 +130,14 @@ const Navbar = () => {
                 </ul>
 
                 <div className='flex items-center gap-6'>
-                    <div className='relative' ref={dropdownRef}>
-                        <img
-                            onClick={() => {
-                                if (!token) {
-                                    navigate('/giris');
-                                } else {
-                                    setIsDropdownOpen(!isDropdownOpen);
-                                }
-                            }}
-                            src={assets.profile_icon}
-                            className='w-5 cursor-pointer'
-                            alt="profil"
-                        />
-                        {token && isDropdownOpen && (
-                            <div className='absolute right-0 pt-4 z-30'>
-                                <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded'>
-                                    <p className='text-black'>Profil</p>
-                                    <p
-                                        onClick={() => {
-                                            navigate('/orders');
-                                            setIsDropdownOpen(false);
-                                        }}
-                                        className='cursor-pointer hover:text-black'
-                                    >
-                                        Siparişler
-                                    </p>
-                                    <p
-                                        onClick={() => {
-                                            logout();
-                                            setIsDropdownOpen(false);
-                                        }}
-                                        className='cursor-pointer hover:text-black'
-                                    >
-                                        Çıkış
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    {/* ProfileDropdown Bileşeni */}
+                    <ProfileDropdown token={token} logout={logout} />
+
                     <img onClick={() => setVisible(true)} src={assets.Menu_icon} className='w-5 cursor-pointer lg:hidden' alt="" />
                 </div>
 
                 {/* Sidebar menu for small screens */}
-                <div className={`absolute top-0 right-0 bottom-0 overflow-y-auto bg-white transition-all ${visible ? 'w-full' : 'w-0'} z-10 lg:hidden`}>
+                <div className={`absolute top-0 right-0 bottom-0 overflow-y-auto bg-white transition-all ${visible ? 'w-full' : 'w-0'} z-20 lg:hidden`}>
                     <div className='flex flex-col text-gray-600'>
                         <div onClick={() => setVisible(false)} className='flex items-center gap-4 p-3 cursor-pointer'>
                             <img src={assets.dropdown_icon} className='h-4 rotate-180' alt="" />
@@ -203,13 +150,12 @@ const Navbar = () => {
                                 onClick={() => toggleMenu('kategoriler')}
                                 className='flex items-center justify-between py-2 pl-6 border cursor-pointer'
                             >
-                                <span >KATEGORİLER</span>
+                                <span>KATEGORİLER</span>
                                 <img
                                     src={assets.dropdown_icon}
                                     className={`h-3 transition-transform ${expandedMenu === 'kategoriler' ? 'rotate-180' : ''}`}
                                     alt="dropdown"
                                 />
-
                             </div>
                             {expandedMenu === 'kategoriler' && (
                                 <div className=''>
@@ -233,7 +179,7 @@ const Navbar = () => {
                                                             key={index}
                                                             className='block py-2 text-gray-400 font-medium cursor-pointer'
                                                             onClick={() => {
-                                                                setVisible(false); // Mobil menüyü kapat
+                                                                setVisible(false);
                                                                 handleCategoryClick(category._id, subCategory);
                                                             }}
                                                         >
@@ -257,16 +203,15 @@ const Navbar = () => {
             {/* Kategoriler, Arama Çubuğu ve Sepet Bölümü */}
             <div className='flex w-full bg-white py-3 items-center'>
                 <div className='hidden lg:block w-1/4'>
-                    <div className='relative group' ref={dropdownRef}>
+                    <div className='relative group'>
                         <button
                             onClick={() => {
-                                setIsCategoriesOpen(!isCategoriesOpen); // Menüyü aç/kapat
-                                setExpandedMenu(expandedMenu === 'kategoriler' ? null : 'kategoriler'); // İkonu değiştir
+                                setIsCategoriesOpen(!isCategoriesOpen);
+                                setExpandedMenu(expandedMenu === 'kategoriler' ? null : 'kategoriler');
                             }}
                             className='flex items-center gap-2 text-white rounded-md px-10 p-2 bg-red-500'
                         >
                             <span>Kategoriler</span>
-                            {/* Koşullu ikon render etme */}
                             {expandedMenu === 'kategoriler' ? (
                                 <IoIosArrowForward className="text-[16px] transition-transform" />
                             ) : (
@@ -309,7 +254,7 @@ const Navbar = () => {
                                                     </div>
                                                     {products
                                                         .filter(product => product.subCategory === subCategory)
-                                                        .slice(0, 5) // En fazla 5 ürün göster
+                                                        .slice(0, 5)
                                                         .map((product, index) => (
                                                             <div
                                                                 key={index}
@@ -332,13 +277,13 @@ const Navbar = () => {
 
                 <div className='w-full lg:w-2/4 flex items-center justify-center'>
                     <div className='w-full relative' ref={searchRef}>
-                        <div className='relative'> {/* Yeni eklenen container */}
+                        <div className='relative'>
                             <input
                                 type="text"
                                 placeholder="Ürün ara..."
                                 value={searchQuery}
                                 onChange={handleSearch}
-                                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black pr-10' 
+                                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black pr-10'
                             />
                             <GrSearch className='absolute right-3 top-1/2 transform -translate-y-1/2 text-xl text-red-400' />
                         </div>

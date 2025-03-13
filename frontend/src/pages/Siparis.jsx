@@ -7,6 +7,7 @@ import axios from 'axios';
 
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import StepIndicator from '../components/StepIndicator ';
+
 const PlaceOrder = () => {
   const { setUserDetails, cartItems, currency, getCartAmount } = useContext(ShopContext);
   const [firstName, setFirstName] = useState('');
@@ -25,8 +26,8 @@ const PlaceOrder = () => {
 
   // Use getCartAmount to calculate totals
   const { subtotal, total } = getCartAmount();
-  const vatAmount = subtotal * 0.2;
-  const subtotalExcludingVAT = subtotal - vatAmount;
+  const vatAmount = subtotal * 0.2; // KDV, subtotal üzerine eklenecek
+  const totalWithVAT = subtotal + vatAmount; // KDV dahil toplam
 
   useEffect(() => {
     const fetchProvinces = async () => {
@@ -229,10 +230,9 @@ const PlaceOrder = () => {
           <div className="p-4 lg:p-0">
             <div className={`${isDetailsVisible ? 'block' : 'hidden'} lg:block`}>
               <CartTotal
-                total={total}
-                subtotalExcludingVAT={subtotalExcludingVAT}
-                vatAmount={vatAmount}
-                kdvDahil={subtotal}
+                total={totalWithVAT.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                subtotal={subtotal.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                vatAmount={vatAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               />
             </div>
 
@@ -247,7 +247,9 @@ const PlaceOrder = () => {
                     {isDetailsVisible ? <IoIosArrowDown /> : <IoIosArrowUp />}
                   </button>
                 </div>
-                <b className="text-sm font-semibold">{currency}{total.toFixed(2)}</b>
+                <b className="text-sm font-semibold">
+                  {currency} {totalWithVAT.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </b>
               </div>
               <button
                 className="bg-black text-white text-sm w-1/3 lg:px-2 lg:w-full my-2 lg:my-8 px-8 py-3"

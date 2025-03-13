@@ -42,6 +42,13 @@ const Orders = ({ token }) => {
     fetchAllOrders();
   }, [token]);
 
+  // KDV dahil fiyatı hesapla
+  const calculateTotalWithVAT = (price) => {
+    const vatRate = 0.20; // KDV oranı (%20)
+    const totalWithVAT = price * (1 + vatRate);
+    return totalWithVAT.toFixed(2); // İki ondalık basamakla sınırla
+  };
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <h3 className="text-2xl font-bold mb-6">Siparişler</h3>
@@ -67,7 +74,7 @@ const Orders = ({ token }) => {
               </div>
               <div>
                 <p className="text-gray-700 font-medium">Toplam Tutar:</p>
-                <p className="text-gray-600">{order.amount}{currency}</p>
+                <p className="text-gray-600">{order.amount}{currency} (KDV Dahil: {calculateTotalWithVAT(order.amount)}{currency})</p>
               </div>
             </div>
 
@@ -79,7 +86,12 @@ const Orders = ({ token }) => {
                   return itemArray.map((nestedItem, nestedIndex) => (
                     <div key={`${itemIndex}-${nestedIndex}`} className="mt-2 p-3 bg-gray-50 rounded-lg">
                       <p className="text-gray-700">{nestedItem.name} - {nestedItem.quantity} Adet</p>
-                      {nestedItem.price && <p className="text-gray-600">Fiyat: {nestedItem.price}{currency}</p>}
+                      {nestedItem.price && (
+                        <>
+                          <p className="text-gray-600">Fiyat: {nestedItem.price}{currency}</p>
+                          <p className="text-gray-600">KDV Dahil Fiyat: {calculateTotalWithVAT(nestedItem.price)}{currency}</p>
+                        </>
+                      )}
                       {nestedItem.kapak && <p className="text-gray-600">Kapak: {nestedItem.kapak}</p>}
                       {nestedItem.baski && <p className="text-gray-600">Baskı: {nestedItem.baski}</p>}
                       {nestedItem.selectedQuantity && <p className="text-gray-600">Seçilen Miktar: {nestedItem.selectedQuantity}</p>}

@@ -74,7 +74,7 @@ const Product = () => {
       const cartItem = {
         id: productData._id,
         name: productData.name,
-        selectedQuantity: quantity, 
+        selectedQuantity: quantity,
         quantity: cartQuantity,
         selectedSize,
         selectedPrintingOption,
@@ -83,7 +83,7 @@ const Product = () => {
         image: productData.images?.[0],
       };
       console.log(cartItem);
-      
+
       addToCart(cartItem);
       setIsAdded(true);
       setTimeout(() => setIsAdded(false), 1000);
@@ -110,6 +110,14 @@ const Product = () => {
     setCurrentImageIndex((prevIndex) =>
       prevIndex === 0 ? productData.images.length - 1 : prevIndex - 1
     );
+  };
+
+  // Fiyat formatlama fonksiyonu
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('tr-TR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price);
   };
 
   return (
@@ -154,7 +162,7 @@ const Product = () => {
             <div className="flex items-center gap-4 mt-5">
               <p className="text-[27px] font-bold text-black">
                 {currency}
-                {totalPrice.toFixed(2)}
+                {formatPrice(totalPrice)} {/* Fiyatı formatla */}
               </p>
             </div>
 
@@ -176,7 +184,6 @@ const Product = () => {
                 </div>
               </div>
 
-
               {/* Quantity Selection */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                 <p className="font-medium text-black w-32">Sipariş Miktarı:</p>
@@ -187,7 +194,6 @@ const Product = () => {
                       onClick={() => setQuantity(qty.label)}
                       className={`px-4 py-2 border text-black text-sm rounded-sm hover:bg-gray-100 hover:border-red-600 transition-all ${quantity === qty.label ? "button-color" : ""
                         }`}
-
                     >
                       {qty.label} Adet
                     </button>
@@ -256,10 +262,12 @@ const Product = () => {
               />
               <button
                 onClick={handleAddToCart}
-                className={`px-8 py-3 text-sm transition-all duration-500 bg-black text-white rounded-sm ${isAdded ? "bg-green-600 text-white animate-slideUp " : ""
-                  }`}
+                className={`px-8 py-3 text-sm transition-all duration-500 ${isAdded
+                    ? "bg-green-600 text-white animate-slideUp"
+                    : "bg-red-600 text-white hover:bg-red-700"
+                  } rounded-sm`}
               >
-                {isAdded ? <IoMdCheckmarkCircleOutline className='w-5 h-5' /> : "SEPETE EKLE"}
+                {isAdded ? <IoMdCheckmarkCircleOutline className='w-[77px] h-5' /> : "SEPETE EKLE"}
               </button>
             </div>
           </div>
@@ -279,8 +287,10 @@ const Product = () => {
             </div>
             <button
               onClick={handleAddToCart}
-              className={`px-8 py-3 text-sm transition-all duration-500 border border-gray-500 bg-gray-100 text-black rounded-sm hover:bg-gray-200 ${isAdded ? "bg-green-600 text-white animate-slideUp" : ""
-                }`}
+              className={`px-8 py-3 text-sm transition-all duration-500 ${isAdded
+                ? "bg-green-600 text-white animate-slideUp"
+                : "bg-red-600 text-white hover:bg-red-700"
+                } rounded-sm`}
             >
               {isAdded ? <IoMdCheckmarkCircleOutline className='w-[77px] h-5' /> : "SEPETE EKLE"}
             </button>

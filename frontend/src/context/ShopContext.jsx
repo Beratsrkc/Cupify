@@ -8,7 +8,9 @@ export const ShopContext = createContext();
 const ShopContextProvider = (props) => {
   const currency = '₺';
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
+  const generateCartItemKey = (item) => {
+    return `${item.id}-${item.selectedSize.label}-${item.selectedPrintingOption}-${item.selectedCoverOption}`;
+  };
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
 
@@ -117,20 +119,22 @@ const ShopContextProvider = (props) => {
   // Sepete ürün ekle
   const addToCart = async (item) => {
     const { id, quantity, selectedSize, selectedPrintingOption, selectedCoverOption, totalPrice, image, selectedQuantity } = item;
-
+  
     if (quantity <= 0) {
       toast.error("Lütfen geçerli bir miktar girin.");
       return;
     }
-
+  
+    const itemKey = generateCartItemKey(item); // Benzersiz anahtar oluştur
+  
     let cartData = structuredClone(cartItems);
-    const itemId = id.toString(); // id'yi string'e çevir
-    if (cartData[itemId]) {
+  
+    if (cartData[itemKey]) {
       // Eğer ürün sepette varsa, miktarı güncelle
-      cartData[itemId].quantity += quantity;
+      cartData[itemKey].quantity += quantity;
     } else {
       // Eğer ürün sepette yoksa, yeni bir ürün ekle
-      cartData[itemId] = {
+      cartData[itemKey] = {
         quantity,
         selectedQuantity,
         selectedSize,
@@ -140,13 +144,14 @@ const ShopContextProvider = (props) => {
         image,
       };
     }
+  
     setCartItems(cartData);
-
+  
     if (token) {
       try {
         await axios.post(
           backendUrl + '/api/cart/add',
-          { itemId, quantity, selectedSize, selectedPrintingOption, selectedQuantity, selectedCoverOption, totalPrice, image },
+          { itemKey, quantity, selectedSize, selectedPrintingOption, selectedQuantity, selectedCoverOption, totalPrice, image },
           { headers: { token } }
         );
       } catch (error) {
@@ -154,19 +159,18 @@ const ShopContextProvider = (props) => {
       }
     }
   };
-
   // Sepetteki ürün miktarını güncelle
-  const updateQuantity = async (itemId, quantity) => {
+  const updateQuantity = async (itemKey, quantity) => {
     let cartData = structuredClone(cartItems);
-    if (cartData[itemId]) {
-      cartData[itemId].quantity = quantity;
+    if (cartData[itemKey]) {
+      cartData[itemKey].quantity = quantity;
       setCartItems(cartData);
-
+  
       if (token) {
         try {
           await axios.post(
             backendUrl + '/api/cart/update',
-            { itemId, quantity },
+            { itemKey, quantity },
             { headers: { token } }
           );
         } catch (error) {
@@ -175,18 +179,17 @@ const ShopContextProvider = (props) => {
       }
     }
   };
-
-  // Sepet toplamını hesapla
+  
   const getCartAmount = () => {
     let totalAmount = 0;
-
-    for (const itemId in cartItems) {
-      const item = cartItems[itemId];
+  
+    for (const itemKey in cartItems) {
+      const item = cartItems[itemKey];
       if (item.quantity > 0) {
         totalAmount += item.totalPrice * item.quantity;
       }
     }
-
+  
     return {
       subtotal: totalAmount,
       total: totalAmount,

@@ -1,11 +1,11 @@
 import React, { useContext } from 'react';
 import { ShopContext } from '../context/ShopContext';
 import Title from './Title';
+
 const CartTotal = ({
   total = 0,
-  subtotalExcludingVAT = 0,
+  subtotal = 0,
   vatAmount = 0,
-  kdvDahil = 0
 }) => {
   const { currency } = useContext(ShopContext);
 
@@ -18,21 +18,17 @@ const CartTotal = ({
       <div className="flex flex-col gap-2 mt-2 text-sm">
         <hr />
         <div className="flex justify-between">
-          <p>Ara Toplam (KDV Hariç)</p>
-          <p>{currency}{subtotalExcludingVAT.toFixed(2)}</p>
+          <p>Ara Toplam</p>
+          <p>{currency}{subtotal}</p>
         </div>
         <div className="flex justify-between">
           <p>KDV (%20)</p>
-          <p>{currency}{vatAmount.toFixed(2)}</p>
-        </div>
-        <div className="flex justify-between">
-          <p>KDV Dahil</p>
-          <p>{currency}{kdvDahil.toFixed(2)}</p>
+          <p>{currency}{vatAmount}</p>
         </div>
         <hr />
         <div className="flex justify-between lg:flex ">
           <b>Toplam</b>
-          <b>{currency}{total.toFixed(2)}</b>
+          <b>{currency}{total}</b>
         </div>
       </div>
     </div>

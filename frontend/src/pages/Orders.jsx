@@ -9,6 +9,20 @@ const Orders = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Fiyat formatlama fonksiyonu
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('tr-TR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price);
+  };
+
+  // KDV dahil fiyat hesaplama fonksiyonu
+  const calculateTotalWithVAT = (price) => {
+    const vatRate = 0.20; // KDV oranı (%20)
+    const totalWithVAT = price * (1 + vatRate);
+    return totalWithVAT;
+  };
 
   const loadOrderData = async () => {
     if (!token) return;
@@ -31,10 +45,9 @@ const Orders = () => {
             date: order.date,
             address: order.address,
             items: order.items.map((item) => {
-              // Kritik değişiklik burada
               const productData = products.find((product) =>
                 String(product.name) === String(item.name) ||
-                product.price === item.price // Fiyat karşılaştırması ekledik
+                product.price === item.price
               );
 
               return {
@@ -55,7 +68,6 @@ const Orders = () => {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     if (products.length > 0) {
@@ -100,33 +112,61 @@ const Orders = () => {
                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
                     <p className="text-sm md:text-base">{order.status}</p>
                   </div>
-
                 </div>
 
                 {/* Sipariş İçindeki Ürünler */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {order.items.map((item, idx) => {
-                    // Ürünün ismini ve fiyatını kontrol et
                     const productData = products.find((product) =>
                       String(product.name) === String(item.name) ||
-                      product.price === item.price // Hem isim hem fiyat eşleşmesi
+                      product.price === item.price
                     );
                     const productImage = productData?.images?.[0] || '/default-image.png';
                     const finalPrice = item.price;
+                    const totalWithVAT = calculateTotalWithVAT(finalPrice);
 
                     return (
-                      <div key={idx} className="flex items-center gap-4 p-2 border">
-                        <img
-                          src={productImage}
-                          className="w-16 h-16 object-cover"
-                          alt={item.name || 'Ürün görseli'}
-                        />
-                        <div>
-                          <p className="font-medium">{item.name}</p>
-                          <p className="text-gray-700">
-                            Fiyat: {currency}{finalPrice}
-                          </p>
-                          <p className="text-gray-700">Adet: {item.quantity}</p>
+                      <div key={idx} className="flex flex-col gap-4 p-4 border rounded-lg">
+                        <div className="flex items-center gap-4">
+                          <img
+                            src={productImage}
+                            className="w-16 h-16 object-cover"
+                            alt={item.name || 'Ürün görseli'}
+                          />
+                          <div>
+                            <p className="font-medium">{item.name}</p>
+                            <p className="text-gray-700">
+                              Fiyat: {currency}{formatPrice(finalPrice)}
+                            </p>
+                            <p className="text-gray-700">
+                              KDV Dahil Fiyat: {currency}{formatPrice(totalWithVAT)}
+                            </p>
+                            <p className="text-gray-700">Adet: {item.quantity}</p>
+                          </div>
+                        </div>
+
+                        {/* Ek Detaylar */}
+                        <div className="text-sm text-gray-700">
+                          {item.kapak && (
+                            <p>
+                              <span className="font-medium">Kapak:</span> {item.kapak}
+                            </p>
+                          )}
+                          {item.size && (
+                            <p>
+                              <span className="font-medium">Ebat:</span> {item.size}
+                            </p>
+                          )}
+                          {item.selectedQuantity && (
+                            <p>
+                              <span className="font-medium">Sipariş Adeti:</span> {item.selectedQuantity}
+                            </p>
+                          )}
+                          {item.baski && (
+                            <p>
+                              <span className="font-medium">Baskı:</span> {item.baski}
+                            </p>
+                          )}
                         </div>
                       </div>
                     );
@@ -139,7 +179,6 @@ const Orders = () => {
           !loading && <p className="text-center text-gray-600">Henüz sipariş bulunmamaktadır.</p>
         )}
       </div>
-
     </div>
   );
 };

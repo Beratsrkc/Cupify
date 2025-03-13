@@ -8,153 +8,192 @@ const Login = () => {
     const [currentState, setCurrentState] = useState('Giriş Yap');
     const { token, setToken, navigate, backendUrl } = useContext(ShopContext);
     const [isForgotPassword, setIsForgotPassword] = useState(false);
-    const [errorMessage, setErrorMessage] = useState(''); // Hata mesajı state'i
+    const [errorMessage, setErrorMessage] = useState('');
 
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
 
     const onSubmitHandler = async (event) => {
-      event.preventDefault();
-      try {
-          if (isForgotPassword) {
-              const lowerCaseEmail = email.toLowerCase();
-  
-              const response = await axios.post(backendUrl + '/api/user/forgot-password', { email: lowerCaseEmail });
-  
-              if (response.data.success) {
-                  toast.success('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi!');
-                  setIsForgotPassword(false);
-              } else {
-                  toast.error(response.data.message); 
-              }
-          } else if (currentState === 'Kayıt Ol') {
-              // Kayıt işlemi
-              const lowerCaseEmail = email.toLowerCase();
-              const response = await axios.post(backendUrl + '/api/user/register', { name, email: lowerCaseEmail, password });
-              if (response.data.success) {
-                  setToken(response.data.token);
-                  localStorage.setItem('token', response.data.token);
-              } else {
-                  toast.error(response.data.message); // Backend'den gelen hata mesajını göster
-              }
-          } else {
-              // Giriş işlemi
-              const lowerCaseEmail = email.toLowerCase(); // E-posta adresini küçük harfe çevir
-              const response = await axios.post(backendUrl + '/api/user/login', { email: lowerCaseEmail, password });
-  
-              if (response.data.success) {
-                  setToken(response.data.token);
-                  localStorage.setItem('token', response.data.token);
-              } else {
-                  toast.error(response.data.message); // Backend'den gelen hata mesajını göster
-              }
-          }
-      } catch (error) {
-          console.error('Hata Detayları:', error); 
-          toast.error('Bir hata oluştu. Lütfen daha sonra tekrar deneyin.'); 
-      }
-  };
+        event.preventDefault();
+        try {
+            if (isForgotPassword) {
+                const lowerCaseEmail = email.toLowerCase();
+                const response = await axios.post(backendUrl + '/api/user/forgot-password', { email: lowerCaseEmail });
+
+                if (response.data.success) {
+                    toast.success('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi!');
+                    setIsForgotPassword(false);
+                } else {
+                    toast.error(response.data.message);
+                }
+            } else if (currentState === 'Kayıt Ol') {
+                const lowerCaseEmail = email.toLowerCase();
+                const response = await axios.post(backendUrl + '/api/user/register', { name, email: lowerCaseEmail, password });
+
+                if (response.data.success) {
+                    setToken(response.data.token);
+                    localStorage.setItem('token', response.data.token);
+                } else {
+                    toast.error(response.data.message);
+                }
+            } else {
+                const lowerCaseEmail = email.toLowerCase();
+                const response = await axios.post(backendUrl + '/api/user/login', { email: lowerCaseEmail, password });
+
+                if (response.data.success) {
+                    setToken(response.data.token);
+                    localStorage.setItem('token', response.data.token);
+                } else {
+                    toast.error(response.data.message);
+                }
+            }
+        } catch (error) {
+            console.error('Hata Detayları:', error);
+            toast.error('Bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
+        }
+    };
 
     useEffect(() => {
         if (token) navigate('/');
     }, [token, navigate]);
 
     return (
-        <form onSubmit={onSubmitHandler} className='flex flex-col items-center w-[90%] sm:max-w-96 m-auto mt-14 gap-4 text-gray-800'>
-            <div className='inline-flex items-center gap-2 mb-2 mt-10'>
-                <p className='text-3xl'>
-                    {isForgotPassword ? 'Şifremi Unuttum' : currentState}
-                </p>
-                <hr className='border-none h-[1.5px] w-8 bg-gray-800' />
-            </div>
-
-            {isForgotPassword ? (
-                // Şifremi Unuttum Formu
-                <>
-                    <input
-                        onChange={(e) => setEmail(e.target.value)}
-                        value={email}
-                        className='w-full px-3 py-2 border border-gray-800'
-                        placeholder='Email'
-                        type="email"
-                        required
-                    />
-                    <button className='bg-red-600 text-white font-light px-8 py-2 mt-4 w-full'>
-                        Bağlantı Gönder
-                    </button>
-                    <p 
-                        onClick={() => setIsForgotPassword(false)}
-                        className='cursor-pointer text-sm text-gray-600'
-                    >
-                        Giriş Yap sayfasına dön
+        <section className="mt-20 flex items-center justify-center p-4">
+            <div className="w-full max-w-md border bg-white rounded-lg shadow-lg p-8">
+                <div className="text-center mb-6">
+                    <h1 className="text-3xl font-bold text-gray-900">
+                        {isForgotPassword ? 'Şifremi Unuttum' : currentState}
+                    </h1>
+                    <p className="text-gray-500 mt-2">
+                        {isForgotPassword
+                            ? 'Şifrenizi sıfırlamak için e-posta adresinizi girin.'
+                            : currentState === 'Giriş Yap'
+                            ? 'Hesabınıza erişmek için giriş yapın.'
+                            : 'Yeni bir hesap oluşturun.'}
                     </p>
-                </>
-            ) : (
-                // Normal Giriş/Kayıt Formu
-                <>
-                    {currentState === 'Giriş Yap' ? null : (
-                        <input
-                            onChange={(e) => setName(e.target.value)}
-                            value={name}
-                            className='w-full px-3 py-2 border border-gray-800'
-                            placeholder='İsim'
-                            type="text"
-                            required
-                        />
-                    )}
-                    <input
-                        onChange={(e) => setEmail(e.target.value)}
-                        value={email}
-                        className='w-full px-3 py-2 border border-gray-800'
-                        placeholder='Email'
-                        type="email"
-                        required
-                    />
-                    <input
-                        onChange={(e) => setPassword(e.target.value)}
-                        value={password}
-                        className='w-full px-3 py-2 border border-gray-800'
-                        placeholder='Şifre'
-                        type="password"
-                        required
-                    />
-                    <div className='w-full flex justify-between text-sm mt-[-8px]'>
-                        <p 
-                            onClick={() => setIsForgotPassword(true)} 
-                            className='cursor-pointer'
-                        >
-                            Şifreni mi unuttun ?
-                        </p>
-                        {currentState === 'Giriş Yap' ? (
-                            <p 
-                                onClick={() => setCurrentState('Kayıt Ol')} 
-                                className='cursor-pointer'
-                            >
-                                Hesap oluştur
-                            </p>
-                        ) : (
-                            <p 
-                                onClick={() => setCurrentState('Giriş Yap')} 
-                                className='cursor-pointer'
-                            >
-                                Giriş Yap
-                            </p>
-                        )}
-                    </div>
-                    <button className='bg-red-600 text-white font-light px-8 py-2 mt-4 w-full'>
-                        {currentState === 'Giriş Yap' ? 'Giriş Yap' : 'Kayıt Ol'}
-                    </button>
-                </>
-            )}
-
-            {/* Hata mesajını göster */}
-            {errorMessage && (
-                <div className="text-red-500 text-sm mt-2">
-                    {errorMessage}
                 </div>
-            )}
-        </form>
+
+                <form onSubmit={onSubmitHandler} className="space-y-6">
+                    {isForgotPassword ? (
+                        // Şifremi Unuttum Formu
+                        <>
+                            <div>
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg "
+                                    placeholder="Email adresinizi girin"
+                                    required
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500"
+                            >
+                                Bağlantı Gönder
+                            </button>
+                            <p
+                                onClick={() => setIsForgotPassword(false)}
+                                className="text-sm text-center text-gray-900 hover:underline cursor-pointer"
+                            >
+                                Giriş Yap sayfasına dön
+                            </p>
+                        </>
+                    ) : (
+                        // Normal Giriş/Kayıt Formu
+                        <>
+                            {currentState === 'Kayıt Ol' && (
+                                <div>
+                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                                        İsim
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg "
+                                        placeholder="İsminizi girin"
+                                        required
+                                    />
+                                </div>
+                            )}
+                            <div>
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg "
+                                    placeholder="Email adresinizi girin"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                                    Şifre
+                                </label>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg "
+                                    placeholder="Şifrenizi girin"
+                                    required
+                                />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <p
+                                    onClick={() => setIsForgotPassword(true)}
+                                    className="text-sm text-gray-800 hover:underline cursor-pointer"
+                                >
+                                    Şifreni mi unuttun?
+                                </p>
+                                {currentState === 'Giriş Yap' ? (
+                                    <p
+                                        onClick={() => setCurrentState('Kayıt Ol')}
+                                        className="text-sm text-gray-800 hover:underline cursor-pointer"
+                                    >
+                                        Hesap oluştur
+                                    </p>
+                                ) : (
+                                    <p
+                                        onClick={() => setCurrentState('Giriş Yap')}
+                                        className="text-sm text-gray-800 hover:underline cursor-pointer"
+                                    >
+                                        Giriş Yap
+                                    </p>
+                                )}
+                            </div>
+                            <button
+                                type="submit"
+                                className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 "
+                            >
+                                {currentState === 'Giriş Yap' ? 'Giriş Yap' : 'Kayıt Ol'}
+                            </button>
+                        </>
+                    )}
+                </form>
+
+                {/* Hata mesajını göster */}
+                {errorMessage && (
+                    <div className="mt-4 text-center text-sm text-red-600">
+                        {errorMessage}
+                    </div>
+                )}
+            </div>
+            <ToastContainer />
+        </section>
     );
 };
 

@@ -16,7 +16,6 @@ import EditDeliveryInfoDialog from '../components/EditDeliveryInfoDialog';
 import StepIndicator from '../components/StepIndicator ';
 import CreditCardVisual from '../components/CreditCardVisual';
 
-
 const Odeme = () => {
     const { products, token, backendUrl, cartItems, setCartItems, userDetails, updateQuantity, getCartAmount, updateUserDetails, currency } =
         useContext(ShopContext);
@@ -42,10 +41,10 @@ const Odeme = () => {
     const [isDetailsVisible, setIsDetailsVisible] = useState(false);
 
     const [cvcFocused, setCvcFocused] = useState(false);
-    const vatAmount = subtotal * 0.2;
-    const subtotalExcludingVAT = subtotal - vatAmount;
+    const vatAmount = subtotal * 0.2; // KDV, subtotal üzerine eklenecek
+    const totalWithVAT = subtotal + vatAmount; // KDV dahil toplam
 
-    const [selectedInstallmentTotal, setSelectedInstallmentTotal] = useState(subtotal);
+    const [selectedInstallmentTotal, setSelectedInstallmentTotal] = useState(totalWithVAT);
 
     const handleInstallmentSelect = (option) => {
         if (option) {
@@ -53,10 +52,9 @@ const Odeme = () => {
             setSelectedInstallmentTotal(Number(option.totalPrice));
         } else {
             setSelectedInstallment(1);
-            setSelectedInstallmentTotal(singlePaymentTotal);
+            setSelectedInstallmentTotal(totalWithVAT);
         }
     };
-
 
     const [touched, setTouched] = useState({
         holderName: false,
@@ -191,11 +189,11 @@ const Odeme = () => {
                 `${backendUrl}/api/payment/installments`,
                 {
                     binNumber,
-                    price: subtotal.toFixed(2)
+                    price: totalWithVAT.toFixed(2) // KDV dahil toplam fiyatı gönder
                 },
                 { headers: { token } }
             );
-
+    
             if (response.data.status === 'success') {
                 const options = response.data.installments[0]?.installmentPrices || [];
                 if (options.length === 0) {
@@ -260,32 +258,39 @@ const Odeme = () => {
 
     const handlePayment = async (event) => {
         event.preventDefault();
-
+    
         // Kullanıcı giriş yapmamışsa guestToken kullan
         const paymentToken = token || guestToken;
-
+    
         if (!paymentToken) {
             toast.error("Ödeme işlemi için giriş yapmanız gerekmektedir.");
             return;
         }
-
+    
         const basketItems = Object.keys(cartItems)
-            .map((itemId) => {
+            .map((itemKey) => {
+                // itemKey'i parçala ve ürün id'sini al
+                const itemId = itemKey.split('-')[0];
                 const productData = products.find((product) => product._id === itemId);
-            
-
-           
-                const itemQuantity = cartItems[itemId].quantity;
-                const itemPrice = (cartItems[itemId].totalPrice * itemQuantity).toFixed(2);
-                const name =productData.name
-                const selectedCoverOption = cartItems[itemId].selectedCoverOption;
-                const selectedPrintingOption = cartItems[itemId].selectedPrintingOption;
-                const selectedQuantity = cartItems[itemId].selectedQuantity;
-                const selectedSize = cartItems[itemId].selectedSize.label;
+    
+                // Eğer productData tanımlı değilse, bu ürünü atla
+                if (!productData) {
+                    console.error(`Ürün bulunamadı: ${itemId}`);
+                    return null;
+                }
+    
+                const itemQuantity = cartItems[itemKey].quantity;
+                const itemPrice = (cartItems[itemKey].totalPrice * itemQuantity).toFixed(2);
+                const name = productData.name;
+                const selectedCoverOption = cartItems[itemKey].selectedCoverOption;
+                const selectedPrintingOption = cartItems[itemKey].selectedPrintingOption;
+                const selectedQuantity = cartItems[itemKey].selectedQuantity;
+                const selectedSize = cartItems[itemKey].selectedSize?.label || 'Belirtilmedi';
+    
                 if (parseFloat(itemPrice) <= 0) {
                     return null; // Geçersiz fiyatları atla
                 }
-
+    
                 return {
                     id: itemId,
                     name: name,
@@ -294,23 +299,26 @@ const Odeme = () => {
                     itemType: 'PHYSICAL',
                     price: itemPrice,
                     quantity: itemQuantity,
-                    size:selectedSize,
-                    selectedQuantity:selectedQuantity,
-                    baski:selectedPrintingOption,
-                    kapak:selectedCoverOption
-
+                    size: selectedSize,
+                    selectedQuantity: selectedQuantity,
+                    baski: selectedPrintingOption,
+                    kapak: selectedCoverOption
                 };
-                
             })
             .filter((item) => item !== null); // Null olanları filtrele
-            console.log(cartItems);
-            console.log(basketItems);
-            
-
+    
+        console.log(cartItems);
+        console.log(basketItems);
+    
+        if (basketItems.length === 0) {
+            toast.error("Sepetinizde geçerli ürün bulunmamaktadır.");
+            return;
+        }
+    
         const paidPrice = selectedInstallment === 1
             ? subtotal
             : installmentOptions.find(opt => opt.installmentNumber === selectedInstallment).totalPrice;
-
+    
         const paymentData = {
             price: subtotal,
             paidPrice: paidPrice,
@@ -353,15 +361,13 @@ const Odeme = () => {
                 country: 'Turkey'
             }
         };
-
-
+    
         try {
             const paymentResponse = await axios.post(`${backendUrl}/api/payment`, paymentData, {
                 headers: { token: paymentToken }, // Burada paymentToken kullanılıyor
             });
-
+    
             if (paymentResponse.data.status === 'success') {
-
                 const orderData = {
                     name: `${userDetails.firstName} ${userDetails.lastName}`,
                     phone: userDetails.phone,
@@ -369,11 +375,11 @@ const Odeme = () => {
                     address: `${userDetails.addressInput} ${userDetails.city} ${userDetails.district}`,
                     amount: subtotal.toFixed(2),
                 };
-
+    
                 const orderResponse = await axios.post(`${backendUrl}/api/order/iyzico`, orderData, {
                     headers: { token: paymentToken }, // Burada da paymentToken kullanılıyor
                 });
-
+    
                 if (orderResponse.data.success) {
                     await clearAllItems();
                     setPaymentSuccess(true);
@@ -608,31 +614,31 @@ const Odeme = () => {
                                         <>
                                             <h3 className="text-lg font-semibold mb-2">Taksit Seçenekleri</h3>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                {installmentOptions.map((option) => (
-                                                    <div
-                                                        key={option.installmentNumber}
-                                                        className={`p-4 border rounded-lg cursor-pointer ${selectedInstallment === option.installmentNumber
-                                                            ? 'bg-blue-50 border-blue-500'
-                                                            : 'bg-white border-gray-200 hover:border-blue-500'
-                                                            }`}
-                                                        onClick={() => {
-                                                            setSelectedInstallment(option.installmentNumber);
-                                                            setSelectedInstallmentTotal(Number(option.totalPrice));
-                                                        }}
-                                                    >
-                                                        <div className="flex justify-between items-center">
-                                                            <span className="font-medium">
-                                                                {option.installmentNumber === 1 ? 'Tek Çekim' : `${option.installmentNumber} Taksit`}
-                                                            </span>
-                                                            <span className="text-sm text-gray-600">
-                                                                {option.totalPrice} TL
-                                                            </span>
-                                                        </div>
-                                                        <div className="text-sm text-gray-500 mt-1">
-                                                            Aylık: {option.installmentPrice.toFixed(2)} TL
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                            {installmentOptions.map((option) => (
+    <div
+        key={option.installmentNumber}
+        className={`p-4 border rounded-lg cursor-pointer ${selectedInstallment === option.installmentNumber
+            ? 'bg-blue-50 border-blue-500'
+            : 'bg-white border-gray-200 hover:border-blue-500'
+            }`}
+        onClick={() => {
+            setSelectedInstallment(option.installmentNumber);
+            setSelectedInstallmentTotal(Number(option.totalPrice));
+        }}
+    >
+        <div className="flex justify-between items-center">
+            <span className="font-medium">
+                {option.installmentNumber === 1 ? 'Tek Çekim' : `${option.installmentNumber} Taksit`}
+            </span>
+            <span className="text-sm text-gray-600">
+                {option.totalPrice} TL
+            </span>
+        </div>
+        <div className="text-sm text-gray-500 mt-1">
+            Aylık: {option.installmentPrice.toFixed(2)} TL
+        </div>
+    </div>
+))}
                                             </div>
                                         </>
                                     ) : (
@@ -733,7 +739,7 @@ const Odeme = () => {
                                                     </div>
                                                     <div className="mt-4 text-right">
                                                         <p>KDV (%20): {(subtotal * 0.20).toFixed(2)} TL</p>
-                                                        <p className="font-semibold">Genel Toplam: {subtotal.toFixed(2)} TL</p>
+                                                        <p className="font-semibold">Genel Toplam: {(subtotal*1.20).toFixed(2)} TL</p>
                                                         <p>Kargo Tutarı: 0,00 TL</p>
 
                                                         <p>Teslimat Adresi: {userDetails?.addressInput}  <br /> {userDetails?.city} / {userDetails?.district}</p>
@@ -892,7 +898,7 @@ const Odeme = () => {
 
                                                     <div className="mt-4 text-right">
                                                         <p>KDV (%20): {(subtotal * 0.20).toFixed(2)} TL</p>
-                                                        <p className="font-semibold">Genel Toplam: {subtotal.toFixed(2)} TL</p>
+                                                        <p className="font-semibold">Genel Toplam: {(subtotal*1.20).toFixed(2)} TL</p>
                                                         <p>Kargo Tutarı: 0,00 TL</p>
                                                         <p>Teslimat Adresi: {userDetails?.addressInput}  <br /> {userDetails?.city} / {userDetails?.district}</p>
                                                     </div>
@@ -1106,18 +1112,15 @@ const Odeme = () => {
                                 </div>
                             </div>
                         </div>
-
-                        <div className="fixed xl:static bottom-0 left-0 w-full bg-white xl:bg-transparent xl:w-[28%] border-t xl:border-t-0 shadow-lg xl:shadow-none">
-                            <div className="p-4 xl:p-0 flex flex-col "> {/* Burada flex-col-reverse kullanıyoruz */}
-
-
+   {/* Sağ Taraf: CartTotal ve Ödeme Butonu */}
+   <div className="fixed xl:static bottom-0 left-0 w-full bg-white xl:bg-transparent xl:w-[28%] border-t xl:border-t-0 shadow-lg xl:shadow-none">
+                            <div className="p-4 xl:p-0 flex flex-col ">
                                 <div className={`${isDetailsVisible ? 'block' : 'hidden'} xl:block`}>
-                                    <CartTotal
-                                        total={selectedInstallmentTotal}
-                                        subtotalExcludingVAT={subtotalExcludingVAT}
-                                        vatAmount={vatAmount}
-                                        kdvDahil={subtotal}
-                                    />
+                                <CartTotal
+              total={totalWithVAT.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              subtotal={subtotal.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              vatAmount={vatAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            />
                                 </div>
                                 <div className="xl:mt-6 xl:p-4 bg-white rounded-lg shadow-sm border-gray-100 py-3 xl:border">
                                     <div className="space-y-3">
