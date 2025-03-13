@@ -307,8 +307,7 @@ const Odeme = () => {
             })
             .filter((item) => item !== null); // Null olanları filtrele
     
-        console.log(cartItems);
-        console.log(basketItems);
+  
     
         if (basketItems.length === 0) {
             toast.error("Sepetinizde geçerli ürün bulunmamaktadır.");

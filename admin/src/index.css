@@ -4,12 +4,12 @@
 
 
 select,input,textarea{
-    border: 1px solid #c9e9d1;
-    outline-color:#638C6D;
+    border: 1px solid rgb(207, 181, 181) ;
+    outline-color:#aca2a2  ;
     border-radius: 4px;
 }
 
 .active{
-    background-color: #b5eec3;
-    border-color: #638C6D;
+    background-color: #f3b7b7 ;
+    border-color: rgb(117, 92, 92);
 }

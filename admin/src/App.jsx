@@ -38,7 +38,7 @@ const App = () => {
                 <Route path="/add" element={<Add token={token} />} />
                 <Route path="/list" element={<List token={token} />} />
                 <Route path="/orders" element={<Orders token={token} />} />
-                <Route path="/add-image" element={<AddImage token={token} />} /> {/* Yeni rota */}
+                <Route path="/add-image" element={<AddImage token={token} />} /> 
                 <Route path="/blogs" element={<BlogManagement token={token} />} />
               </Routes>
             </div>

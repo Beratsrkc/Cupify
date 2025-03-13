@@ -26,12 +26,12 @@ const ProfileDropdown = ({ token, logout }) => {
             {/* Profil Butonu */}
             <img
                 onClick={() => {
-                    console.log("Profil ikonuna tıklandı");
+                  
                     if (!token) {
-                        console.log("Token yok, giriş sayfasına yönlendiriliyor");
+                      
                         navigate('/giris');
                     } else {
-                        console.log("Dropdown açılıyor/kapanıyor");
+                        
                         setIsDropdownOpen(!isDropdownOpen);
                     }
                 }}

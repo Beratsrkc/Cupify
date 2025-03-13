@@ -57,10 +57,10 @@ const Product = () => {
     if (selectedSize) {
       let price = selectedSize.price * quantity;
       if (selectedCoverOption && selectedCoverOption !== "Yok") {
-        // Kapak fiyatını seçilen adetle çarp ve toplam fiyata ekle
+    
         price += coverPrice * quantity;
       }
-      console.log("Calculated Total Price:", price); // Konsola yazdır
+    
       setTotalPrice(price);
     }
   }, [selectedSize, quantity, selectedCoverOption, coverPrice]);
@@ -82,7 +82,7 @@ const Product = () => {
         totalPrice: totalPrice * cartQuantity,
         image: productData.images?.[0],
       };
-      console.log(cartItem);
+
 
       addToCart(cartItem);
       setIsAdded(true);
