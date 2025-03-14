@@ -52,6 +52,7 @@ const Odeme = () => {
             setSelectedInstallmentTotal(Number(option.totalPrice));
         } else {
             setSelectedInstallment(1);
+            // Taksit seçenekleri yoksa, KDV dahil toplam fiyatı kullan
             setSelectedInstallmentTotal(totalWithVAT);
         }
     };
@@ -100,7 +101,6 @@ const Odeme = () => {
 
 
 
-
     useEffect(() => {
         const fetchBinDetails = async () => {
             const cleanedCardNumber = cardNumber.replace(/\D/g, '');
@@ -112,22 +112,20 @@ const Odeme = () => {
                         { binNumber: bin },
                         { headers: { token } }
                     );
-
+    
                     if (response.data.status === 'success') {
-
-
                         const isCredit = response.data.cardType === 'CREDIT_CARD';
                         setIsCreditCard(isCredit);
-
-
+    
                         if (!isCredit) {
                             setInstallmentOptions([]);
+                            // Debit kartlarda KDV dahil toplam fiyatı kullan
                             handleInstallmentSelect({
                                 installmentNumber: 1,
-                                totalPrice: singlePaymentTotal.toFixed(2)
+                                totalPrice: totalWithVAT.toFixed(2)
                             });
                         }
-
+    
                         setCardInfo(response.data);
                     } else {
                         setCardNumberError('Kart bilgisi alınamadı');
@@ -197,18 +195,30 @@ const Odeme = () => {
             if (response.data.status === 'success') {
                 const options = response.data.installments[0]?.installmentPrices || [];
                 if (options.length === 0) {
-                    handleInstallmentSelect(null);
+                    // Taksit seçenekleri yoksa, KDV dahil toplam fiyatı kullan
+                    handleInstallmentSelect({
+                        installmentNumber: 1,
+                        totalPrice: totalWithVAT.toFixed(2)
+                    });
                 }
                 return options;
             } else {
                 toast.error('Taksit bilgileri alınamadı');
-                handleInstallmentSelect(null);
+                // Taksit seçenekleri yoksa, KDV dahil toplam fiyatı kullan
+                handleInstallmentSelect({
+                    installmentNumber: 1,
+                    totalPrice: totalWithVAT.toFixed(2)
+                });
                 return [];
             }
         } catch (error) {
             console.error('Taksit bilgisi alınamadı:', error);
             toast.error('Taksit bilgileri alınırken bir hata oluştu.');
-            handleInstallmentSelect(null);
+            // Taksit seçenekleri yoksa, KDV dahil toplam fiyatı kullan
+            handleInstallmentSelect({
+                installmentNumber: 1,
+                totalPrice: totalWithVAT.toFixed(2)
+            });
             return [];
         }
     };
@@ -416,7 +426,7 @@ const Odeme = () => {
                 onSubmit={handlePayment}
             >
                 {paymentSuccess ? (
-                    <div className="flex w-full items-center justify-center min-h-screen text-center bg-gray-50">
+                    <div className="flex w-full items-center justify-center min-h-screen text-center ">
                         <div className="flex flex-col justify-center items-center p-6 bg-white rounded-lg shadow-lg max-w-md mx-4">
                             <div className="flex justify-center items-center gap-4 mb-6">
                                 <motion.div
@@ -1158,18 +1168,21 @@ const Odeme = () => {
                             <div className="w-full flex justify-between px-4">
                                 {/* Toplam Fiyat (Sadece Mobilde ve Detaylar Kapalıyken Gösterilir) */}
                                 {(
-                                    <div className="xl:hidden items-center mb-2 w-1/5">
-                                        <div className='flex'>
-                                            <b className="text-sm font-semibold">Toplam </b>
-                                            <button
-                                                onClick={() => setIsDetailsVisible(!isDetailsVisible)}
-                                                className="text-black"
-                                            >
-                                                {isDetailsVisible ? <IoIosArrowDown /> : <IoIosArrowUp />}
-                                            </button>
-                                        </div>
-                                        <b className="text-sm font-semibold">{currency}{selectedInstallmentTotal.toFixed(2)}</b>
-                                    </div>
+                                <div className="xl:hidden items-center mb-2 w-1/5">
+                                <div className='flex'>
+                                    <b className="text-sm font-semibold">Toplam </b>
+                                    <button
+                                        onClick={() => setIsDetailsVisible(!isDetailsVisible)}
+                                        className="text-black"
+                                    >
+                                        {isDetailsVisible ? <IoIosArrowDown /> : <IoIosArrowUp />}
+                                    </button>
+                                </div>
+                                {/* Taksit seçenekleri yoksa KDV dahil toplam fiyatı göster */}
+                                <b className="text-sm font-semibold">
+                                    {currency}{selectedInstallmentTotal.toFixed(2)}
+                                </b>
+                            </div>
                                 )}
                                 <button
                                     type='submit'

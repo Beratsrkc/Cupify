@@ -59,7 +59,7 @@ const Login = () => {
     }, [token, navigate]);
 
     return (
-        <section className="mt-20 flex items-center justify-center p-4">
+        <section className="mt-12 sm:mt-20  flex items-center justify-center p-4">
             <div className="w-full max-w-md border bg-white rounded-lg shadow-lg p-8">
                 <div className="text-center mb-6">
                     <h1 className="text-3xl font-bold text-gray-900">

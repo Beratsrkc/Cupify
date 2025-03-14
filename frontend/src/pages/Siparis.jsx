@@ -248,7 +248,7 @@ const PlaceOrder = () => {
                   </button>
                 </div>
                 <b className="text-sm font-semibold">
-                  {currency} {totalWithVAT.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {currency}{totalWithVAT.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </b>
               </div>
               <button
