@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { FaFacebook, FaTwitter, FaUser, FaArrowLeft } from "react-icons/fa";
 import { motion } from "framer-motion";
+
 const generateSlug = (text) => {
   return text
     .toLowerCase()
@@ -17,6 +18,7 @@ const generateSlug = (text) => {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 };
+
 const BlogDetail = () => {
   const { backendUrl } = useContext(ShopContext);
   const { slug } = useParams(); // URL'den slug'ı al
@@ -111,7 +113,7 @@ const BlogDetail = () => {
         </motion.div>
 
         {/* İçerik */}
-        <div className="prose max-w-none">
+        <div className="prose max-w-none text-container">
           {blog.content.map((item, index) => (
             <motion.div
               key={index}

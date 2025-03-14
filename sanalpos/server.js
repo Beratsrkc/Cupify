@@ -50,7 +50,7 @@ const allowedOrigins = [
         callback(new Error('CORS policy blocked this request'));
       }
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'UPDATE', 'PATCH'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'UPDATE', 'PATCH', 'LIST'],
     allowedHeaders: ['Content-Type', 'Authorization', 'token'],
     credentials: true, // Kimlik bilgilerine izin ver
   }));

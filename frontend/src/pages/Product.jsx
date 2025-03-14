@@ -5,7 +5,6 @@ import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { FaSearchPlus } from "react-icons/fa";
-import RelatedProducts from '../components/RelatedProducts';
 
 const generateSlug = (text) => {
   return text
@@ -306,9 +305,7 @@ const Product = () => {
           </div>
         </div>
 
-        {/* Related Products */}
-        <RelatedProducts category={productData.category} subCategory={productData.subCategory} />
-
+       
         {/* Full-Screen Image Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">

@@ -63,7 +63,7 @@ const Contact = () => {
         onChange={(e) => setName(e.target.value)}
         className="block min-h-[auto] w-full rounded border-2 bg-transparent py-[0.32rem] px-3 leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100"
         id="name"
-        placeholder="Name" // Placeholder eklendi
+        placeholder="İsim" // Placeholder eklendi
         required
       />
     </div>
@@ -76,7 +76,7 @@ const Contact = () => {
         onChange={(e) => setEmail(e.target.value)}
         className="block min-h-[auto] w-full rounded border-2 bg-transparent py-[0.32rem] px-3 leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100"
         id="email"
-        placeholder="Email address" // Placeholder eklendi
+        placeholder="Email " // Placeholder eklendi
         required
       />
     </div>
@@ -89,7 +89,7 @@ const Contact = () => {
         className="block min-h-[auto] w-full rounded border-2 bg-transparent py-[0.32rem] px-3 leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100"
         id="message"
         rows="3"
-        placeholder="Message" // Placeholder eklendi
+        placeholder="Mesaj" // Placeholder eklendi
         required
       ></textarea>
     </div>
