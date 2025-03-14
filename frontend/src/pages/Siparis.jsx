@@ -252,7 +252,7 @@ const PlaceOrder = () => {
                 </b>
               </div>
               <button
-                className="bg-black text-white text-sm w-1/3 lg:px-2 lg:w-full my-2 lg:my-8 px-8 py-3"
+                  className="bg-black text-white text-sm w-1/3 lg:px-2 lg:w-full my-2 lg:my-8 px-8 py-3 rounded-lg hover:bg-gray-900 transition-colors"
                 onClick={handleProceedToPayment}
               >
                 Ödeme
