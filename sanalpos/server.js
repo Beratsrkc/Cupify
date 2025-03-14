@@ -35,6 +35,7 @@ const allowedOrigins = [
     'http://localhost:5174',
     'https://cupify.com.tr', 
     'https://www.cupify.com.tr', 
+    'https://cupify-adminpanel.vercel.app', 
     'https://admin.cupify.com.tr', 
     'https://cupify.com.tr/admin', 
     'https://www.cupify.com.tr/admin',
