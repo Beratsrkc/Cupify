@@ -36,7 +36,6 @@ const allowedOrigins = [
     'https://cupify.com.tr', // Ana site
     'https://www.cupify.com.tr', // Ana site (www ile)
     'https://admin.cupify.com.tr', // Admin paneli
-    'https://api.cupify.com.tr', // API'nin kendisi
 ];
 
 app.use((req, res, next) => {
