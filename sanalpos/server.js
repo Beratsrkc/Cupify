@@ -31,29 +31,34 @@ const app = express();
 
 // Middleware
 const allowedOrigins = [
-    'http://localhost:5173', 
-    'http://localhost:5174',
-    'https://cupify.com.tr', 
-    'https://www.cupify.com.tr', 
-    'https://admin.cupify.com.tr', 
-    'https://cupify.com.tr/admin', 
-    'https://www.cupify.com.tr/admin',
-    'https://api.cupify.com.tr',  
-  ];
-  
-  app.use(cors({
+    'http://localhost:5173', // Geliştirme ortamı
+    'http://localhost:5174', // Geliştirme ortamı
+    'https://cupify.com.tr', // Ana site
+    'https://www.cupify.com.tr', // Ana site (www ile)
+    'https://admin.cupify.com.tr', // Admin paneli
+    'https://cupify.com.tr/admin', // Admin paneli alternatif URL
+    'https://www.cupify.com.tr/admin', // Admin paneli alternatif URL
+    'https://api.cupify.com.tr', // API'nin kendisi
+];
+
+app.use(cors({
     origin: function (origin, callback) {
-      // Eğer origin tanımlı değilse veya izin verilenler listesindeyse kabul et
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('CORS policy blocked this request'));
-      }
+        console.log('Gelen Origin:', origin); // Loglama ekledik
+        // Eğer origin tanımlı değilse veya izin verilenler listesindeyse kabul et
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.cupify.com.tr')) {
+            console.log('İzin Verilen Origin:', origin); // Loglama ekledik
+            callback(null, true);
+        } else {
+            console.log('Engellenen Origin:', origin); // Loglama ekledik
+            callback(new Error('CORS policy blocked this request'));
+        }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'UPDATE', 'PATCH', 'LIST'],
     allowedHeaders: ['Content-Type', 'Authorization', 'token'],
     credentials: true, // Kimlik bilgilerine izin ver
-  }));
+}));
+
+app.options('*', cors()); // Tüm preflight isteklerini kabul et
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
