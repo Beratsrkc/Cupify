@@ -42,7 +42,7 @@ app.use((req, res, next) => {
     const origin = req.headers.origin;
     console.log('Gelen Origin:', origin); // Loglama ekledik
 
-    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.cupify.com.tr')) {
+    if (allowedOrigins.includes(origin) || origin.endsWith('.cupify.com.tr')) {
         console.log('İzin Verilen Origin:', origin); // Loglama ekledik
         res.header('Access-Control-Allow-Origin', origin); // İstek yapan origin'i dinamik olarak ayarla
     } else {
