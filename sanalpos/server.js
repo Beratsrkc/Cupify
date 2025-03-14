@@ -39,7 +39,6 @@ const allowedOrigins = [
     'https://api.cupify.com.tr', // API'nin kendisi
 ];
 
-// CORS ayarları
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     console.log('Gelen Origin:', origin); // Loglama ekledik
@@ -56,7 +55,6 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Credentials', 'true'); // Kimlik bilgilerine izin ver
     next();
 });
-
 // Preflight isteklerini ele al
 app.options('*', (req, res) => {
     const origin = req.headers.origin;
