@@ -39,23 +39,35 @@ const allowedOrigins = [
     'https://api.cupify.com.tr', // API'nin kendisi
 ];
 
-app.use(cors({
-    origin: function (origin, callback) {
-        console.log('Gelen Origin:', origin); // Loglama ekledik
-        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.cupify.com.tr')) {
-            console.log('İzin Verilen Origin:', origin); // Loglama ekledik
-            callback(null, true);
-        } else {
-            console.log('Engellenen Origin:', origin); // Loglama ekledik
-            callback(new Error('CORS policy blocked this request'));
-        }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'UPDATE', 'PATCH', 'LIST'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'token'],
-    credentials: true, // Kimlik bilgilerine izin ver
-}));
+// CORS ayarları
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    console.log('Gelen Origin:', origin); // Loglama ekledik
 
-app.options('*', cors()); // Tüm preflight isteklerini kabul et
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.cupify.com.tr')) {
+        console.log('İzin Verilen Origin:', origin); // Loglama ekledik
+        res.header('Access-Control-Allow-Origin', origin); // İstek yapan origin'i dinamik olarak ayarla
+    } else {
+        console.log('Engellenen Origin:', origin); // Loglama ekledik
+    }
+
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, token');
+    res.header('Access-Control-Allow-Credentials', 'true'); // Kimlik bilgilerine izin ver
+    next();
+});
+
+// Preflight isteklerini ele al
+app.options('*', (req, res) => {
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin) || origin.endsWith('.cupify.com.tr')) {
+        res.header('Access-Control-Allow-Origin', origin); // İstek yapan origin'i dinamik olarak ayarla
+    }
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, token');
+    res.header('Access-Control-Allow-Credentials', 'true'); // Kimlik bilgilerine izin ver
+    res.send();
+});
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
