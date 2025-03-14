@@ -36,15 +36,12 @@ const allowedOrigins = [
     'https://cupify.com.tr', // Ana site
     'https://www.cupify.com.tr', // Ana site (www ile)
     'https://admin.cupify.com.tr', // Admin paneli
-    'https://cupify.com.tr/admin', // Admin paneli alternatif URL
-    'https://www.cupify.com.tr/admin', // Admin paneli alternatif URL
     'https://api.cupify.com.tr', // API'nin kendisi
 ];
 
 app.use(cors({
     origin: function (origin, callback) {
         console.log('Gelen Origin:', origin); // Loglama ekledik
-        // Eğer origin tanımlı değilse veya izin verilenler listesindeyse kabul et
         if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.cupify.com.tr')) {
             console.log('İzin Verilen Origin:', origin); // Loglama ekledik
             callback(null, true);
@@ -65,7 +62,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
 // Ödeme rotası
-// Ödeme Endpoint
 app.post('/api/payment', async (req, res) => {
     try {
         const { price, paidPrice, currency, basketId, paymentCard, buyer, shippingAddress, billingAddress, basketItems, installment } = req.body;
@@ -97,11 +93,10 @@ app.post('/api/payment', async (req, res) => {
                     errorMessage: result.errorMessage,
                     errorCode: result.errorCode,
                     errorGroup: result.errorGroup,
-                    request: request // İstek detaylarını da loglayabilirsiniz
+                    request: request
                 });
                 return res.status(400).json({ status: 'failure', errorMessage: result.errorMessage });
             }
-            // Ödeme başarılı, sipariş kaydetme işlemi frontend'den yapılacak
             return res.status(200).json({ status: 'success', message: 'Ödeme başarılı', paymentResult: result });
         });
     } catch (error) {
@@ -129,7 +124,6 @@ app.post('/api/payment/bin/check', async (req, res) => {
             }
 
             if (result.status === 'success') {
-                // Iyzico formatına uygun yanıt
                 const formattedResponse = {
                     binNumber,
                     cardType: result.cardType,
