@@ -30,22 +30,30 @@ const iyzipay = new Iyzipay({
 const app = express();
     
 // Middleware
+const allowedOrigins = [
+    'http://localhost:5173', 
+    'http://localhost:5174',
+    'https://cupify.com.tr', 
+    'https://www.cupify.com.tr', 
+    'https://admin.cupify.com.tr', 
+    'https://cupify.com.tr/admin', 
+    'https://www.cupify.com.tr/admin',
+    'https://api.cupify.com.tr',  
+];
+
 app.use(cors({
-    origin: [
-        'http://localhost:5173', 
-        'http://localhost:5174',
-        'https://cupify.com.tr', 
-        'https://www.cupify.com.tr', 
-        'https://admin.cupify.com.tr', 
-        'https://cupify.com.tr/admin', 
-        'https://www.cupify.com.tr/admin',
-        'https://api.cupify.com.tr',  
-    ],
+    origin: function (origin, callback) {
+        // Eğer origin tanımlı değilse veya izin verilenler listesindeyse kabul et
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('CORS policy blocked this request'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'UPDATE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'token'],
     credentials: true
 }));
-
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
