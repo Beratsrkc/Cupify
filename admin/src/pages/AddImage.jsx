@@ -10,84 +10,87 @@ const AddImage = ({ token }) => {
   const [isLoading, setIsLoading] = useState(false); // Yükleme durumu
   const [imagesList, setImagesList] = useState([]); // Resim listesi
 
-  // Resimleri çekme işlemi
-  const fetchImages = async () => {
-    try {
-      const response = await axios.get(`${backendUrl}/api/images/list`, {
+// Resimleri çekme işlemi
+const fetchImages = async () => {
+  try {
+    const response = await axios.get(`${backendUrl}/api/images/list`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true, // Kimlik bilgilerini gönder
+    });
+    setImagesList(response.data.images);
+  } catch (error) {
+    console.error('Resimler yüklenirken hata oluştu:', error);
+    toast.error('Resimler yüklenirken bir hata oluştu.');
+  }
+};
+
+// Resim yükleme işlemi
+const handleImageUpload = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+
+  if (!image) {
+    toast.error('Lütfen bir resim seçin!');
+    setIsLoading(false);
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('image', image); // Resmi FormData'ya ekle
+    formData.append('type', type); // Galeri veya Referans bilgisi
+
+    // Backend'e resmi gönder
+    const response = await axios.post(`${backendUrl}/api/images/add`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+      withCredentials: true, // Kimlik bilgilerini gönder
+    });
+
+    if (response.data.success) {
+      toast.success('Resim başarıyla yüklendi!');
+      setImage(null); // Resmi sıfırla
+      fetchImages(); // Resim listesini güncelle
+    } else {
+      toast.error('Resim yüklenirken bir hata oluştu.');
+    }
+  } catch (error) {
+    console.error('Resim yükleme hatası:', error);
+    toast.error(error.response?.data?.message || 'Sunucu hatası');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+// Resim silme işlemi
+const handleDeleteImage = async (imageId) => {
+  try {
+    const response = await axios.post(
+      `${backendUrl}/api/images/remove`,
+      { imageId },
+      {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
-      setImagesList(response.data.images);
-    } catch (error) {
-      console.error('Resimler yüklenirken hata oluştu:', error);
-      toast.error('Resimler yüklenirken bir hata oluştu.');
-    }
-  };
-
-  // Resim yükleme işlemi
-  const handleImageUpload = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    if (!image) {
-      toast.error('Lütfen bir resim seçin!');
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append('image', image); // Resmi FormData'ya ekle
-      formData.append('type', type); // Galeri veya Referans bilgisi
-
-      // Backend'e resmi gönder
-      const response = await axios.post(`${backendUrl}/api/images/add`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      if (response.data.success) {
-        toast.success('Resim başarıyla yüklendi!');
-        setImage(null); // Resmi sıfırla
-        fetchImages(); // Resim listesini güncelle
-      } else {
-        toast.error('Resim yüklenirken bir hata oluştu.');
+        withCredentials: true, // Kimlik bilgilerini gönder
       }
-    } catch (error) {
-      console.error('Resim yükleme hatası:', error);
-      toast.error(error.response?.data?.message || 'Sunucu hatası');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    );
 
-  // Resim silme işlemi
-  const handleDeleteImage = async (imageId) => {
-    try {
-      const response = await axios.post(
-        `${backendUrl}/api/images/remove`,
-        { imageId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.data.success) {
-        toast.success('Resim başarıyla silindi!');
-        fetchImages(); // Resim listesini güncelle
-      } else {
-        toast.error('Resim silinirken bir hata oluştu.');
-      }
-    } catch (error) {
-      console.error('Resim silme hatası:', error);
-      toast.error(error.response?.data?.message || 'Sunucu hatası');
+    if (response.data.success) {
+      toast.success('Resim başarıyla silindi!');
+      fetchImages(); // Resim listesini güncelle
+    } else {
+      toast.error('Resim silinirken bir hata oluştu.');
     }
-  };
+  } catch (error) {
+    console.error('Resim silme hatası:', error);
+    toast.error(error.response?.data?.message || 'Sunucu hatası');
+  }
+};
 
   // Bileşen yüklendiğinde resimleri çek
   useEffect(() => {
