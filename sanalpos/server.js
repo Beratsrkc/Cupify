@@ -31,46 +31,36 @@ const app = express();
 
 // Middleware
 const allowedOrigins = [
-    'http://localhost:5173', // Geliştirme ortamı
-    'http://localhost:5174', // Geliştirme ortamı
-    'https://cupify.com.tr', // Ana site
-    'https://www.cupify.com.tr', // Ana site (www ile)
-    'https://admin.cupify.com.tr', // Admin paneli
-];
-
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    console.log('Gelen Origin:', origin); // Loglama ekledik
-
-    if (allowedOrigins.includes(origin) || origin.endsWith('.cupify.com.tr')) {
-        console.log('İzin Verilen Origin:', origin); // Loglama ekledik
-        res.header('Access-Control-Allow-Origin', origin); // İstek yapan origin'i dinamik olarak ayarla
-    } else {
-        console.log('Engellenen Origin:', origin); // Loglama ekledik
-    }
-
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, token');
-    res.header('Access-Control-Allow-Credentials', 'true'); // Kimlik bilgilerine izin ver
-    next();
-});
-// Preflight isteklerini ele al
-app.options('*', (req, res) => {
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin) || origin.endsWith('.cupify.com.tr')) {
-        res.header('Access-Control-Allow-Origin', origin); // İstek yapan origin'i dinamik olarak ayarla
-    }
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, token');
-    res.header('Access-Control-Allow-Credentials', 'true'); // Kimlik bilgilerine izin ver
-    res.send();
-});
+    'http://localhost:5173', 
+    'http://localhost:5174',
+    'https://cupify.com.tr', 
+    'https://www.cupify.com.tr', 
+    'https://admin.cupify.com.tr', 
+    'https://cupify.com.tr/admin', 
+    'https://www.cupify.com.tr/admin',
+    'https://api.cupify.com.tr',  
+  ];
+  
+  app.use(cors({
+    origin: function (origin, callback) {
+      // Eğer origin tanımlı değilse veya izin verilenler listesindeyse kabul et
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS policy blocked this request'));
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'UPDATE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'token'],
+    credentials: true, // Kimlik bilgilerine izin ver
+  }));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
 // Ödeme rotası
+// Ödeme Endpoint
 app.post('/api/payment', async (req, res) => {
     try {
         const { price, paidPrice, currency, basketId, paymentCard, buyer, shippingAddress, billingAddress, basketItems, installment } = req.body;
@@ -102,10 +92,11 @@ app.post('/api/payment', async (req, res) => {
                     errorMessage: result.errorMessage,
                     errorCode: result.errorCode,
                     errorGroup: result.errorGroup,
-                    request: request
+                    request: request // İstek detaylarını da loglayabilirsiniz
                 });
                 return res.status(400).json({ status: 'failure', errorMessage: result.errorMessage });
             }
+            // Ödeme başarılı, sipariş kaydetme işlemi frontend'den yapılacak
             return res.status(200).json({ status: 'success', message: 'Ödeme başarılı', paymentResult: result });
         });
     } catch (error) {
@@ -133,6 +124,7 @@ app.post('/api/payment/bin/check', async (req, res) => {
             }
 
             if (result.status === 'success') {
+                // Iyzico formatına uygun yanıt
                 const formattedResponse = {
                     binNumber,
                     cardType: result.cardType,
