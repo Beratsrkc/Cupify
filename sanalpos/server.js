@@ -28,7 +28,7 @@ const iyzipay = new Iyzipay({
 
 // Express app oluşturma
 const app = express();
-    
+
 // Middleware
 const allowedOrigins = [
     'http://localhost:5173', 
@@ -54,6 +54,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'token'],
     credentials: true
 }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
@@ -62,9 +63,8 @@ app.use(morgan('dev'));
 // Ödeme Endpoint
 app.post('/api/payment', async (req, res) => {
     try {
-        const { price, paidPrice, currency, basketId, paymentCard, buyer, shippingAddress, billingAddress, basketItems, installment} = req.body;
+        const { price, paidPrice, currency, basketId, paymentCard, buyer, shippingAddress, billingAddress, basketItems, installment } = req.body;
 
-    
         const request = {
             locale: Iyzipay.LOCALE.TR,
             conversationId: '123456789',
@@ -104,12 +104,11 @@ app.post('/api/payment', async (req, res) => {
     }
 });
 
-
 // BIN Sorgulama Endpoint'i
 app.post('/api/payment/bin/check', async (req, res) => {
     try {
         const { binNumber } = req.body;
-        
+
         const request = {
             locale: Iyzipay.LOCALE.TR,
             conversationId: '123456789',
@@ -123,7 +122,7 @@ app.post('/api/payment/bin/check', async (req, res) => {
                     message: 'BIN sorgulama başarısız'
                 });
             }
-           
+
             if (result.status === 'success') {
                 // Iyzico formatına uygun yanıt
                 const formattedResponse = {
@@ -139,7 +138,7 @@ app.post('/api/payment/bin/check', async (req, res) => {
                     systemTime: result.systemTime,
                     conversationId: result.conversationId
                 };
-                
+
                 res.json(formattedResponse);
             } else {
                 res.status(400).json({
@@ -149,13 +148,14 @@ app.post('/api/payment/bin/check', async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ 
+        res.status(500).json({
             status: 'error',
-            message: 'Sunucu hatası' 
+            message: 'Sunucu hatası'
         });
     }
 });
-// Örnek: Taksit Sorgulama Endpoint'i
+
+// Taksit Sorgulama Endpoint'i
 app.post('/api/payment/installments', async (req, res) => {
     try {
         const { binNumber, price } = req.body;
@@ -209,6 +209,7 @@ app.get('/', (req, res) => {
     res.send('API is working');
 });
 
+// Router'ları kullanma
 app.use('/api/user', userRouter);
 app.use('/api/product', productRouter);
 app.use('/api/cart', cartRouter);
@@ -216,6 +217,7 @@ app.use('/api/order', orderRouter);
 app.use('/api/category', categoryRouter);
 app.use('/api/images', imageRoutes);
 app.use("/api/blogs", blogRouter);
+
 // Veritabanı ve Cloudinary bağlantıları
 connectDB();
 connectCloudinary();
