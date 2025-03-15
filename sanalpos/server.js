@@ -37,9 +37,6 @@ const allowedOrigins = [
     'https://www.cupify.com.tr', 
     'https://cupify-adminpanel.vercel.app', 
     'https://admin.cupify.com.tr', 
-    'https://cupify.com.tr/admin', 
-    'https://www.cupify.com.tr/admin',
-    'https://api.cupify.com.tr',  
   ];
   
   app.use(cors({
