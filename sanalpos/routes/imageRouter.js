@@ -8,7 +8,7 @@ const imageRouter = express.Router();
 
 // Resim ekleme (Admin yetkisi gerektirir)
 imageRouter.post('/add', adminAuth, upload.single('image'), addImage);
-
+    
 // Tüm resimleri listeleme
 imageRouter.get('/list', listImages);
 
