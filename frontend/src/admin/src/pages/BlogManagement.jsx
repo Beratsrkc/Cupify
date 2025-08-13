@@ -192,7 +192,7 @@ const BlogManagement = ({ token }) => {
                 <button
                   type="button"
                   onClick={() => removeContentField(index)}
-                  className="w-1/2 py-2 bg-orangeBrand text-white rounded-md hover:bg-red-700 transition-colors"
+                  className="w-1/2 py-2 bg-orangeBrand text-white rounded-md hover:bg-orangeBrandDark transition-colors"
                 >
                   Bu İçeriği Sil
                 </button>
@@ -233,7 +233,7 @@ const BlogManagement = ({ token }) => {
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">{blog.title}</h3>
                 <button
                   onClick={() => handleDeleteBlog(blog._id)}
-                  className="w-full py-2 bg-orangeBrand text-white rounded-md hover:bg-red-700 transition-colors"
+                  className="w-full py-2 bg-orangeBrand text-white rounded-md hover:bg-orangeBrandDark transition-colors"
                 >
                   Blogu Sil
                 </button>

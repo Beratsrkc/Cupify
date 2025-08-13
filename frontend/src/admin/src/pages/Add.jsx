@@ -299,7 +299,7 @@ const Add = ({ token }) => {
                 <button
                   type="button"
                   onClick={addNewCategory}
-                  className="bg-orangeBrand text-white px-4 py-2 rounded hover:bg-red-700"
+                  className="bg-orangeBrand text-white px-4 py-2 rounded hover:bg-orangeBrandDark"
                 >
                   Kategori Ekle
                 </button>
@@ -329,7 +329,7 @@ const Add = ({ token }) => {
                 <button
                   type="button"
                   onClick={addNewSubCategory}
-                  className="bg-orangeBrand text-white px-4 py-2 rounded hover:bg-red-700"
+                  className="bg-orangeBrand text-white px-4 py-2 rounded hover:bg-orangeBrandDark"
                 >
                   Alt Kategori Ekle
                 </button>
@@ -431,7 +431,7 @@ const Add = ({ token }) => {
               <button
                 type="button"
                 onClick={() => removeQuantity(index)}
-                className="bg-red-500 text-white px-3 py-1 rounded"
+                className="bg-orangeBrand text-white px-3 py-1 rounded"
               >
                 Sil
               </button>
@@ -464,7 +464,7 @@ const Add = ({ token }) => {
               <button
                 type="button"
                 onClick={() => removePrintingOption(index)}
-                className="bg-red-500 text-white px-3 py-1 rounded"
+                className="bg-orangeBrand text-white px-3 py-1 rounded"
               >
                 Sil
               </button>
@@ -518,7 +518,7 @@ const Add = ({ token }) => {
                   <button
                     type="button"
                     onClick={() => removeCoverColor(index)}
-                    className="bg-red-500 text-white px-3 py-1 rounded"
+                    className="bg-orangeBrand text-white px-3 py-1 rounded"
                   >
                     Sil
                   </button>

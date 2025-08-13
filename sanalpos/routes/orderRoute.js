@@ -1,9 +1,10 @@
 import express from "express";
 import {
-  placeOrderIyzico,
-  allOrders,
-  userOrders,
-  updateStatus,
+    placeOrder,
+    allOrders,
+    userOrders,
+    updateStatus,
+    updateOrderStatus
 } from "../controllers/orderController.js";
 import adminAuth from "../middleware/adminAuth.js";
 import authUser from "../middleware/auth.js";
@@ -11,13 +12,14 @@ import authUser from "../middleware/auth.js";
 const orderRouter = express.Router();
 
 // Admin Routes
-orderRouter.post("/list", adminAuth, allOrders); // Tüm siparişleri listele
-orderRouter.post("/status", adminAuth, updateStatus); // Sipariş durumunu güncelle
+orderRouter.post("/list", adminAuth, allOrders);
+orderRouter.post("/status", adminAuth, updateStatus);
 
-// Payment Routes
-orderRouter.post("/iyzico", authUser, placeOrderIyzico); // Ödeme ve sipariş oluşturma
+// Payment Routes (Iyzico yerine PayTR)
+orderRouter.post("/", authUser, placeOrder); // Yeni endpoint
+orderRouter.post("/callback", updateOrderStatus); // PayTR callback için
 
 // User Routes
-orderRouter.post("/userorders", authUser, userOrders); // Kullanıcı siparişlerini getir
+orderRouter.post("/userorders", authUser, userOrders);
 
 export default orderRouter;

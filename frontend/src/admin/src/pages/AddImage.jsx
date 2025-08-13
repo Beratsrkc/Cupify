@@ -163,7 +163,7 @@ const handleDeleteImage = async (imageId) => {
               <p className="mt-2 text-sm text-gray-600">{img.type === 'gallery' ? 'Galeri' : 'Referans'}</p>
               <button
                 onClick={() => handleDeleteImage(img._id)}
-                className="w-full mt-2 py-1 bg-red-500 text-white rounded hover:bg-orangeBrand"
+                className="w-full mt-2 py-1 bg-orangeBrand text-white rounded hover:bg-orangeBrand"
               >
                 Sil
               </button>

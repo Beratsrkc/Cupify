@@ -94,7 +94,7 @@ const Login = () => {
                             </div>
                             <button
                                 type="submit"
-                                className="w-full bg-orangeBrand text-white py-2 rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500"
+                                className="w-full bg-orangeBrand text-white py-2 rounded-lg hover:bg-orangeBrandDark focus:ring-2 focus:ring-red-500"
                             >
                                 Bağlantı Gönder
                             </button>
@@ -177,7 +177,7 @@ const Login = () => {
                             </div>
                             <button
                                 type="submit"
-                                className="w-full bg-orangeBrand text-white py-2 rounded-lg hover:bg-red-700 "
+                                className="w-full bg-orangeBrand text-white py-2 rounded-lg hover:bg-orangeBrandDark "
                             >
                                 {currentState === 'Giriş Yap' ? 'Giriş Yap' : 'Kayıt Ol'}
                             </button>

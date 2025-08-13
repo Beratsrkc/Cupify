@@ -79,7 +79,6 @@ const App = () => {
         />
 
         {/* Normal Site */}
-        <Route path="/iletisim" element={<Contact />} />
         <Route
           path="*"
           element={
@@ -101,6 +100,7 @@ const App = () => {
                   <Route path="/siparis" element={<PlaceOrder />} />
                   <Route path="/orders" element={<Orders />} />
                   <Route path="/odeme" element={<Odeme />} />
+                  <Route path="/iletisim" element={<Contact />} />
                   <Route path="/gizlilik-sozlesmesi" element={<GizlilikSozlesmesi />} />
                   <Route path="/mesafeli-satis-sozlesmesi" element={<MesafeliSatisSozlesmesi />} />
                   <Route path="/teslimat-ve-iade-sartlari" element={<TeslimatVeIade />} />

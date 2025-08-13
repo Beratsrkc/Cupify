@@ -262,7 +262,7 @@ const Product = () => {
                 onClick={handleAddToCart}
                 className={`px-8 py-3 text-sm transition-all duration-500 ${isAdded
                     ? "bg-green-600 text-white animate-slideUp"
-                    : "bg-orangeBrand text-white hover:bg-red-700"
+                    : "bg-orangeBrand text-white hover:bg-orangeBrandDark"
                   } rounded-sm`}
               >
                 {isAdded ? <IoMdCheckmarkCircleOutline className='w-[77px] h-5' /> : "SEPETE EKLE"}
@@ -287,7 +287,7 @@ const Product = () => {
               onClick={handleAddToCart}
               className={`px-8 py-3 text-sm transition-all duration-500 ${isAdded
                 ? "bg-green-600 text-white animate-slideUp"
-                : "bg-orangeBrand text-white hover:bg-red-700"
+                : "bg-orangeBrand text-white hover:bg-orangeBrandDark"
                 } rounded-sm`}
             >
               {isAdded ? <IoMdCheckmarkCircleOutline className='w-[77px] h-5' /> : "SEPETE EKLE"}

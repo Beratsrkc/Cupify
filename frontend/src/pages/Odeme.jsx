@@ -267,145 +267,73 @@ const Odeme = () => {
     };
 
     const handlePayment = async (event) => {
-        event.preventDefault();
-    
-        // Kullanıcı giriş yapmamışsa guestToken kullan
-        const paymentToken = token || guestToken;
-    
-        if (!paymentToken) {
-            toast.error("Ödeme işlemi için giriş yapmanız gerekmektedir.");
-            return;
-        }
-    
-        const basketItems = Object.keys(cartItems)
-            .map((itemKey) => {
-                // itemKey'i parçala ve ürün id'sini al
-                const itemId = itemKey.split('-')[0];
-                const productData = products.find((product) => product._id === itemId);
-    
-                // Eğer productData tanımlı değilse, bu ürünü atla
-                if (!productData) {
-                    console.error(`Ürün bulunamadı: ${itemId}`);
-                    return null;
-                }
-    
-                const itemQuantity = cartItems[itemKey].quantity;
-                const itemPrice = (cartItems[itemKey].totalPrice * itemQuantity).toFixed(2);
-                const name = productData.name;
-                const selectedCoverOption = cartItems[itemKey].selectedCoverOption;
-                const selectedPrintingOption = cartItems[itemKey].selectedPrintingOption;
-                const selectedQuantity = cartItems[itemKey].selectedQuantity;
-                const selectedSize = cartItems[itemKey].selectedSize?.label || 'Belirtilmedi';
-    
-                if (parseFloat(itemPrice) <= 0) {
-                    return null; // Geçersiz fiyatları atla
-                }
-    
-                return {
-                    id: itemId,
-                    name: name,
-                    category1: 'DefaultCategory',
-                    category2: 'DefaultSubCategory',
-                    itemType: 'PHYSICAL',
-                    price: itemPrice,
-                    quantity: itemQuantity,
-                    size: selectedSize,
-                    selectedQuantity: selectedQuantity,
-                    baski: selectedPrintingOption,
-                    kapak: selectedCoverOption
-                };
-            })
-            .filter((item) => item !== null); // Null olanları filtrele
-    
+  event.preventDefault();
   
-    
-        if (basketItems.length === 0) {
-            toast.error("Sepetinizde geçerli ürün bulunmamaktadır.");
-            return;
-        }
-    
-        const paidPrice = selectedInstallment === 1
-            ? subtotal
-            : installmentOptions.find(opt => opt.installmentNumber === selectedInstallment).totalPrice;
-    
-        const paymentData = {
-            price: subtotal,
-            paidPrice: paidPrice,
-            currency: 'TRY',
-            installment: selectedInstallment,
-            basketId: '116116',
-            paymentCard: {
-                cardHolderName: holderName,
-                cardNumber: cleanedCardNumber,
-                expireMonth: expireMonth,
-                expireYear: expireYear,
-                cvc: cvc,
-                registerCard: '0'
-            },
-            basketItems: basketItems,
-            buyer: {
-                id: '1',
-                name: userDetails.firstName,
-                surname: userDetails.lastName,
-                identityNumber: '74300864791',
-                email: userDetails.email,
-                gsmNumber: userDetails.phone,
-                registrationAddress: userDetails.addressInput,
-                city: userDetails.city,
-                country: 'Turkey',
-                ip: "85.34.78.112"
-            },
-            shippingAddress: {
-                address: userDetails.addressInput,
-                city: userDetails.city,
-                contactName: `${userDetails.firstName} ${userDetails.lastName}`,
-                district: userDetails.district,
-                country: 'Turkey'
-            },
-            billingAddress: {
-                address: userDetails.addressInput,
-                city: userDetails.city,
-                district: userDetails.district,
-                contactName: `${userDetails.firstName} ${userDetails.lastName}`,
-                country: 'Turkey'
-            }
+  // Kart bilgilerini doğrula
+  if (validateHolderName() || validateCardNumber() || 
+      validateExpireMonth() || validateExpireYear() || validateCvc()) {
+    toast.error("Lütfen kart bilgilerinizi kontrol edin");
+    return;
+  }
+
+  const cleanedCardNumber = cardNumber.replace(/\s/g, '');
+  
+  try {
+    // 1. Önce siparişi oluştur
+    const orderResponse = await axios.post(`${backendUrl}/api/order`, {
+      userId: userDetails._id,
+      items: Object.keys(cartItems).map(itemKey => {
+        const itemId = itemKey.split('-')[0];
+        const product = products.find(p => p._id === itemId);
+        return {
+          productId: itemId,
+          name: product.name,
+          price: cartItems[itemKey].totalPrice,
+          quantity: cartItems[itemKey].quantity,
+          selectedCoverOption: cartItems[itemKey].selectedCoverOption,
+          selectedPrintingOption: cartItems[itemKey].selectedPrintingOption,
+          selectedSize: cartItems[itemKey].selectedSize?.label
         };
-    
-        try {
-            const paymentResponse = await axios.post(`${backendUrl}/api/payment`, paymentData, {
-                headers: { token: paymentToken }, // Burada paymentToken kullanılıyor
-            });
-    
-            if (paymentResponse.data.status === 'success') {
-                const orderData = {
-                    name: `${userDetails.firstName} ${userDetails.lastName}`,
-                    phone: userDetails.phone,
-                    items: basketItems,
-                    address: `${userDetails.addressInput} ${userDetails.city} ${userDetails.district}`,
-                    amount: subtotal.toFixed(2),
-                };
-    
-                const orderResponse = await axios.post(`${backendUrl}/api/order/iyzico`, orderData, {
-                    headers: { token: paymentToken }, // Burada da paymentToken kullanılıyor
-                });
-    
-                if (orderResponse.data.success) {
-                    await clearAllItems();
-                    setPaymentSuccess(true);
-                    setTimeout(() => {
-                        navigate('/');
-                    }, 4000);
-                } else {
-                    console.error('Sipariş oluşturma hatası:', orderResponse.data.message);
-                }
-            } else {
-                console.error('Ödeme başarısız:', paymentResponse.data.errorMessage);
-            }
-        } catch (error) {
-            console.error('Hata:', error.response?.data || error.message);
-            toast.error(error.response?.data?.errorMessage || error.message || 'Bir hata oluştu');
-        }
-    };
+      }),
+      amount: selectedInstallmentTotal,
+      address: `${userDetails.addressInput}, ${userDetails.city}/${userDetails.district}`,
+      name: `${userDetails.firstName} ${userDetails.lastName}`,
+      phone: userDetails.phone,
+      email: userDetails.email,
+      merchant_oid: `ORD${Date.now()}` // Frontend'de oluşturuyoruz
+    }, { headers: { token } });
+
+    if (!orderResponse.data.success) {
+      throw new Error('Sipariş oluşturulamadı');
+    }
+
+    // 2. PayTR ödeme isteğini gönder
+    const paymentResponse = await axios.post(`${backendUrl}/api/payment/paytr`, {
+      cardHolderName: holderName,
+      cardNumber: cleanedCardNumber,
+      expireMonth,
+      expireYear,
+      cvc,
+      price: selectedInstallmentTotal,
+      userDetails,
+      merchant_oid: orderResponse.data.order.merchant_oid, // Siparişten gelen ID
+      installmentCount: selectedInstallment,
+      basketItems: orderResponse.data.order.items // Sipariş öğeleri
+    }, { headers: { token } });
+
+    // 3. Ödeme başarılıysa
+    if (paymentResponse.data.status === 'success') {
+      await clearAllItems();
+      setPaymentSuccess(true);
+      
+      // Başarılı sayfasına yönlendirme yapabilirsiniz
+      // navigate('/payment-success');
+    }
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Ödeme işlemi başarısız oldu');
+    console.error('Payment error:', error);
+  }
+};
     const handleSaveDeliveryInfo = (updatedInfo) => {
         updateUserDetails(updatedInfo);
     };

@@ -24,7 +24,7 @@ const BlogCard = ({ blog }) => {
   const slug = createSlug(blog.title);
 
   return (
-    <div className="bg-white rounded-lg border shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 h-[400px] flex flex-col">
+    <div className="bg-white rounded-lg border shadow-lg overflow-hidden hover:shadow-lg transition-shadow duration-300 h-[400px] flex flex-col">
       {/* Resim Alanı (Sabit Boyut) */}
       <Link to={`/blog/${slug}`} className="block relative h-48 overflow-hidden">
         <img
@@ -43,7 +43,7 @@ const BlogCard = ({ blog }) => {
         </span>
 
         {/* Başlık (Üç Nokta ile Kısaltma) */}
-        <h2 className="mt-2 text-xl font-bold text-gray-800 hover:text-red-600 transition-colors duration-200 line-clamp-2">
+        <h2 className="mt-2 text-xl font-bold text-gray-800 line-clamp-1">
           <Link to={`/blog/${slug}`}>{blog.title}</Link>
         </h2>
 
@@ -56,7 +56,7 @@ const BlogCard = ({ blog }) => {
         <div className="mt-6">
           <Link
             to={`/blog/${slug}`}
-            className="inline-block px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-orangeBrand transition-colors duration-200"
+            className="inline-block px-6 py-2 bg-orangeBrand text-white rounded-lg hover:bg-orangeBrandDark transition-colors duration-200"
           >
             Devamını Oku
           </Link>

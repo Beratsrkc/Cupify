@@ -17,13 +17,13 @@ const NewsletterBox = () => {
     };
 
     return (
-        <div className="relative w-full py-28 overflow-hidden">
+        <div className="relative w-full py-10 overflow-hidden">
             <div className="mx-auto w-full px-4 lg:px-8">
                 <div className="flex flex-col items-center lg:flex-row lg:justify-center lg:items-start">
                     {/* Resim Bölümü (Sağ Taraf) */}
                     <div className="lg:ml-6 lg:order-last mt-6 lg:mt-0">
                         <img
-                            className="h-[15rem] lg:h-[18rem] w-full rounded-lg object-cover lg:w-[400px] shadow-2xl"
+                            className="h-[15rem] lg:h-[18rem] w-full rounded-lg object-cover lg:w-[400px] shadow-lg"
                             src={assets.Kartonbardak3}
                             alt="Özel Baskılı Ambalaj Örneği"
                         />
@@ -44,7 +44,7 @@ const NewsletterBox = () => {
                         {/* İletişim Butonu */}
                         <button
                             onClick={onContactHandler}
-                            className="w-full rounded-lg bg-orangeBrand px-4 py-2 text-white font-semibold hover:bg-red-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 lg:w-2/5"
+                            className="w-full rounded-lg bg-orangeBrand px-4 py-2 text-white font-semibold hover:bg-orangeBrandDark transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 lg:w-2/5"
                         >
                             İletişime Geç
                         </button>

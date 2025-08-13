@@ -97,7 +97,7 @@ const Contact = () => {
     {/* Submit Button */}
     <button
       type="submit"
-      className="w-full rounded bg-red-500 text-white px-6 pt-2.5 pb-2 text-xs font-medium uppercase leading-normal"
+      className="w-full rounded bg-orangeBrand text-white px-6 pt-2.5 pb-2 text-xs font-medium uppercase leading-normal"
     >
       Send
     </button>

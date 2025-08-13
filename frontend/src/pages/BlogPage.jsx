@@ -73,9 +73,9 @@ const BlogPage = () => {
                     onClick={() => paginate(number)}
                     className={`px-4 py-2 border ${
                       currentPage === number
-                        ? "bg-red-500 text-white border-red-500"
+                        ? "bg-orangeBrand text-white border-red-500"
                         : "bg-white text-gray-700 border-gray-300"
-                    } rounded-md hover:bg-red-500 hover:text-white transition-all`}
+                    } rounded-md hover:bg-orangeBrandDark hover:text-white transition-all`}
                   >
                     {number}
                   </button>
