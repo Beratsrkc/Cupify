@@ -134,7 +134,7 @@ const Navbar = () => {
                 <FiMenu size={24} />
               </button>
               <Link to="/">
-                <img src={assets.Cupify_logo} className="w-32" alt="logo" />
+                <img src={assets.Cupify_logo} className="w-40" alt="logo" />
               </Link>
             </div>
 

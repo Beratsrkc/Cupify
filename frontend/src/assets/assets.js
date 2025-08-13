@@ -1,4 +1,4 @@
-import Cupify_logo from "./Cupify_Logo.png";
+import Cupify_logo from "./CupifyLogoDüz.png";
 import cart_icon from "./cart_icon.png";
 import bin_icon from "./bin_icon.png";
 import dropdown_icon from "./dropdown_icon.png";

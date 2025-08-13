@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { ShopContext } from '../context/ShopContext';
+import React, { useContext, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { ShopContext } from "../context/ShopContext";
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
@@ -24,7 +24,7 @@ const Product = () => {
   const { slug } = useParams();
   const { products, currency, addToCart } = useContext(ShopContext);
   const [productData, setProductData] = useState(null);
-  const [image, setImage] = useState('');
+  const [image, setImage] = useState("");
   const [quantity, setQuantity] = useState(1000);
   const [isAdded, setIsAdded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,16 +37,19 @@ const Product = () => {
   const [cartQuantity, setCartQuantity] = useState(1);
 
   useEffect(() => {
-    const product = products.find(item => generateSlug(item.name) === slug);
+    const product = products.find((item) => generateSlug(item.name) === slug);
     if (product) {
       setProductData(product);
-      setImage(product.images?.[0] || '/assets/default-image.jpg');
+      setImage(product.images?.[0] || "/assets/default-image.jpg");
       setSelectedSize(product.sizes?.[0] || { price: 0 }); // Varsayılan değer
       setSelectedPrintingOption(product.printingOptions?.[0] || "");
       setSelectedCoverOption(product.coverOptions?.colors?.[0] || null);
       setCoverPrice(product.coverOptions?.price || 0);
       setQuantity(product.quantities?.[0]?.label || 1000);
-      setTotalPrice((product.sizes?.[0]?.price || 0) * (product.quantities?.[0]?.multiplier || 1));
+      setTotalPrice(
+        (product.sizes?.[0]?.price || 0) *
+          (product.quantities?.[0]?.multiplier || 1)
+      );
     } else {
       setProductData(null);
     }
@@ -56,16 +59,19 @@ const Product = () => {
     if (selectedSize) {
       let price = selectedSize.price * quantity;
       if (selectedCoverOption && selectedCoverOption !== "Yok") {
-    
         price += coverPrice * quantity;
       }
-    
+
       setTotalPrice(price);
     }
   }, [selectedSize, quantity, selectedCoverOption, coverPrice]);
 
   if (!productData) {
-    return <div className="min-h-screen flex items-center justify-center">Ürün yükleniyor...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Ürün yükleniyor...
+      </div>
+    );
   }
 
   const handleAddToCart = () => {
@@ -81,7 +87,7 @@ const Product = () => {
         totalPrice: totalPrice * cartQuantity,
         image: productData.images?.[0],
       };
-  
+
       addToCart(cartItem);
       setIsAdded(true);
       setTimeout(() => setIsAdded(false), 1000);
@@ -99,8 +105,8 @@ const Product = () => {
   };
 
   const handleNextImage = () => {
-    setCurrentImageIndex((prevIndex) =>
-      (prevIndex + 1) % productData.images.length
+    setCurrentImageIndex(
+      (prevIndex) => (prevIndex + 1) % productData.images.length
     );
   };
 
@@ -112,7 +118,7 @@ const Product = () => {
 
   // Fiyat formatlama fonksiyonu
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('tr-TR', {
+    return new Intl.NumberFormat("tr-TR", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(price);
@@ -146,7 +152,7 @@ const Product = () => {
               <img
                 onClick={() => openModal(currentImageIndex)}
                 className="w-full h-auto sm:max-h-[450px] max-h-80 object-contain cursor-pointer rounded-sm bg-slate-200"
-                src={image || '/assets/default-image.jpg'}
+                src={image || "/assets/default-image.jpg"}
                 alt=""
               />
             </div>
@@ -154,7 +160,9 @@ const Product = () => {
 
           {/* Product Details */}
           <div className="w-full lg:w-1/2">
-            <h1 className="font-semibold text-3xl text-black ">{productData.name}</h1>
+            <h1 className="font-semibold text-3xl text-black ">
+              {productData.name}
+            </h1>
 
             {/* Price Section */}
             <div className="flex items-center gap-4 mt-5">
@@ -173,8 +181,9 @@ const Product = () => {
                     <button
                       key={index}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 border text-black text-sm rounded-sm hover:bg-gray-100 hover:border-red-600 transition-all${selectedSize?._id === size._id ? " button-color" : ""
-                        }`}
+                      className={`px-4 py-2 border text-black text-sm rounded-sm hover:bg-gray-100 hover:border-red-600 transition-all${
+                        selectedSize?._id === size._id ? " button-color" : ""
+                      }`}
                     >
                       {size.label}
                     </button>
@@ -190,8 +199,9 @@ const Product = () => {
                     <button
                       key={index}
                       onClick={() => setQuantity(qty.label)}
-                      className={`px-4 py-2 border text-black text-sm rounded-sm hover:bg-gray-100 hover:border-red-600 transition-all ${quantity === qty.label ? "button-color" : ""
-                        }`}
+                      className={`px-4 py-2 border text-black text-sm rounded-sm hover:bg-gray-100 hover:border-red-600 transition-all ${
+                        quantity === qty.label ? "button-color" : ""
+                      }`}
                     >
                       {qty.label} Adet
                     </button>
@@ -207,8 +217,9 @@ const Product = () => {
                     <button
                       key={index}
                       onClick={() => setSelectedPrintingOption(option)}
-                      className={`px-4 py-2 border  text-black text-sm rounded-sm hover:bg-gray-100 hover:border-red-600 transition-all ${selectedPrintingOption === option ? "button-color" : ""
-                        }`}
+                      className={`px-4 py-2 border  text-black text-sm rounded-sm hover:bg-gray-100 hover:border-red-600 transition-all ${
+                        selectedPrintingOption === option ? "button-color" : ""
+                      }`}
                     >
                       {option}
                     </button>
@@ -228,8 +239,9 @@ const Product = () => {
                           setSelectedCoverOption(color);
                           setCoverPrice(productData.coverOptions.price);
                         }}
-                        className={`px-4 py-2 border  text-black text-sm rounded-sm hover:bg-gray-100 hover:border-red-600 transition-all ${selectedCoverOption === color ? "button-color" : ""
-                          }`}
+                        className={`px-4 py-2 border  text-black text-sm rounded-sm hover:bg-gray-100 hover:border-red-600 transition-all ${
+                          selectedCoverOption === color ? "button-color" : ""
+                        }`}
                       >
                         {color}
                       </button>
@@ -239,8 +251,11 @@ const Product = () => {
                         setSelectedCoverOption("Yok");
                         setCoverPrice(0);
                       }}
-                      className={`px-4 py-2 border  text-black text-sm rounded-sm hover:bg-gray-200 hover:border-red-600 transition-all ${selectedCoverOption === "Yok" ? "bg-gray-100 border-red-600 text-black" : ""
-                        }`}
+                      className={`px-4 py-2 border  text-black text-sm rounded-sm hover:bg-gray-200 hover:border-red-600 transition-all ${
+                        selectedCoverOption === "Yok"
+                          ? "bg-gray-100 border-red-600 text-black"
+                          : ""
+                      }`}
                     >
                       Yok
                     </button>
@@ -260,12 +275,17 @@ const Product = () => {
               />
               <button
                 onClick={handleAddToCart}
-                className={`px-8 py-3 text-sm transition-all duration-500 ${isAdded
+                className={`px-8 py-3 text-sm transition-all duration-500 ${
+                  isAdded
                     ? "bg-green-600 text-white animate-slideUp"
                     : "bg-orangeBrand text-white hover:bg-orangeBrandDark"
-                  } rounded-sm`}
+                } rounded-sm`}
               >
-                {isAdded ? <IoMdCheckmarkCircleOutline className='w-[77px] h-5' /> : "SEPETE EKLE"}
+                {isAdded ? (
+                  <IoMdCheckmarkCircleOutline className="w-[77px] h-5" />
+                ) : (
+                  "SEPETE EKLE"
+                )}
               </button>
             </div>
           </div>
@@ -285,12 +305,17 @@ const Product = () => {
             </div>
             <button
               onClick={handleAddToCart}
-              className={`px-8 py-3 text-sm transition-all duration-500 ${isAdded
-                ? "bg-green-600 text-white animate-slideUp"
-                : "bg-orangeBrand text-white hover:bg-orangeBrandDark"
-                } rounded-sm`}
+              className={`px-8 py-3 text-sm transition-all duration-500 ${
+                isAdded
+                  ? "bg-green-600 text-white animate-slideUp"
+                  : "bg-orangeBrand text-white hover:bg-orangeBrandDark"
+              } rounded-sm`}
             >
-              {isAdded ? <IoMdCheckmarkCircleOutline className='w-[77px] h-5' /> : "SEPETE EKLE"}
+              {isAdded ? (
+                <IoMdCheckmarkCircleOutline className="w-[77px] h-5" />
+              ) : (
+                "SEPETE EKLE"
+              )}
             </button>
           </div>
         </div>
@@ -298,14 +323,15 @@ const Product = () => {
         {/* Product Description */}
         <div className="mt-10 bg-white rounded-sm">
           <div className="flex">
-            <b className="border px-5 py-4 text-sm bg-gray-100 text-black rounded-t-xs">Açıklama</b>
+            <b className="border px-5 py-4 text-sm bg-gray-100 text-black rounded-t-xs">
+              Açıklama
+            </b>
           </div>
           <div className="flex flex-col gap-4 border px-4 py-6 text-sm text-black rounded-b-xs">
             <p>{productData.description}</p>
           </div>
         </div>
 
-       
         {/* Full-Screen Image Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
