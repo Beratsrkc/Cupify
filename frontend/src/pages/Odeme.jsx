@@ -403,7 +403,7 @@ const Odeme = () => {
 
                                 </div>
                                 <div>
-                                    <img src={assets.tekparcaLogolar} alt="iyzico icon" className=" w-44 sm:w-56" />
+                                    <img src={assets.tekparcaLogolar} alt="paytr icon" className=" w-44 sm:w-56" />
                                 </div>
                             </div>
 

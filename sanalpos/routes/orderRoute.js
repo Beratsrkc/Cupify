@@ -15,7 +15,6 @@ const orderRouter = express.Router();
 orderRouter.post("/list", adminAuth, allOrders);
 orderRouter.post("/status", adminAuth, updateStatus);
 
-// Payment Routes (Iyzico yerine PayTR)
 orderRouter.post("/", authUser, placeOrder); // Yeni endpoint
 orderRouter.post("/callback", updateOrderStatus); // PayTR callback için
 
