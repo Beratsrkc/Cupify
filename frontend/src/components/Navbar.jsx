@@ -134,7 +134,7 @@ const Navbar = () => {
                 <FiMenu size={24} />
               </button>
               <Link to="/">
-                <img src={assets.Cupify_logo} className="w-40" alt="logo" />
+                <img src={assets.Cupify_logo} className="w-[100px]" alt="logo" />
               </Link>
             </div>
 
@@ -342,7 +342,7 @@ const Navbar = () => {
       </div>
 
       {/* Arama Çubuğu - Mobil */}
-      <div className="lg:hidden bg-white py-2 px-4 border-b">
+      <div className="lg:hidden bg-white py-3  border-b">
         <div className="relative" ref={searchRef}>
           <input
             type="text"

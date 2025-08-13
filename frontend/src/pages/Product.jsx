@@ -5,6 +5,8 @@ import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { FaSearchPlus } from "react-icons/fa";
+import RelatedProducts from "../components/RelatedProducts";
+import ProductFeatures from "../components/ProductFeatures";
 
 const generateSlug = (text) => {
   return text
@@ -369,6 +371,8 @@ const Product = () => {
           </div>
         )}
       </div>
+      <ProductFeatures />
+        <RelatedProducts currentProduct={productData} products={products} />
     </div>
   );
 };

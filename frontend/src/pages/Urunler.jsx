@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { ShopContext } from '../context/ShopContext';
 import { assets } from '../assets/assets';
 import Title from '../components/Title';
@@ -12,16 +12,33 @@ const Collection = () => {
     const [showFilter, setShowFilter] = useState(false);
     const [filterProducts, setFilterProducts] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [selectedCategories, setSelectedCategories] = useState([]); // Seçilen kategoriler
-    const [selectedSubCategories, setSelectedSubCategories] = useState([]); // Seçilen alt kategoriler
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    const [selectedSubCategories, setSelectedSubCategories] = useState([]);
     const location = useLocation();
     const navigate = useNavigate();
+    const topRef = useRef(null);
 
     // Pagination state'leri
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(12); // Her sayfada 12 ürün
+    const [itemsPerPage] = useState(12);
 
-    // Fetch categories and subcategories
+    // Sayfanın en üstüne çık
+    const scrollToTop = () => {
+        topRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // Sayfa değiştirme fonksiyonu
+    const paginate = (pageNumber) => {
+        setCurrentPage(pageNumber);
+        scrollToTop();
+    };
+
+    // Kategori veya alt kategori değiştiğinde 1. sayfaya dön
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedCategories, selectedSubCategories]);
+
+    // Kategorileri çek
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -40,90 +57,113 @@ const Collection = () => {
         fetchCategories();
     }, [token, backendUrl]);
 
-    // URL parametresini kontrol etme
+    // URL'den filtreleri oku
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
-        const categoryParam = queryParams.get('category');
-        const subCategoryParam = queryParams.get('subCategory');
+        const categoryParams = queryParams.getAll('category');
+        const subCategoryParams = queryParams.getAll('subCategory');
 
-        if (categoryParam) {
-            setSelectedCategories([categoryParam]); // URL'den gelen kategoriyi seç
+        if (categoryParams.length > 0) {
+            setSelectedCategories(categoryParams);
         }
-        if (subCategoryParam) {
-            setSelectedSubCategories([subCategoryParam]); // URL'den gelen alt kategoriyi seç
+        if (subCategoryParams.length > 0) {
+            setSelectedSubCategories(subCategoryParams);
         }
     }, [location.search]);
 
     // Kategori seçimi
-    const toggleCategory = (e) => {
-        const categoryId = e.target.value;
-        let updatedCategories;
-
-        if (selectedCategories.includes(categoryId)) {
-            updatedCategories = selectedCategories.filter(item => item !== categoryId);
-        } else {
-            updatedCategories = [...selectedCategories, categoryId];
-        }
-
-        setSelectedCategories(updatedCategories);
-        updateURL(updatedCategories, selectedSubCategories);
+    const toggleCategory = (categoryId) => {
+        setSelectedCategories(prev => {
+            const newCategories = prev.includes(categoryId)
+                ? prev.filter(id => id !== categoryId)
+                : [...prev, categoryId];
+            
+            // Alt kategorileri temizle
+            if (!newCategories.includes(categoryId)) {
+                setSelectedSubCategories(prevSub => 
+                    prevSub.filter(sub => !categories
+                        .find(cat => cat._id === categoryId)?.subCategories.includes(sub)
+                    )
+                );
+            }
+            return newCategories;
+        });
     };
 
     // Alt kategori seçimi
-    const toggleSubCategory = (e) => {
-        const subCategory = e.target.value;
-        let updatedSubCategories;
-
-        if (selectedSubCategories.includes(subCategory)) {
-            updatedSubCategories = selectedSubCategories.filter(item => item !== subCategory);
-        } else {
-            updatedSubCategories = [...selectedSubCategories, subCategory];
-        }
-
-        setSelectedSubCategories(updatedSubCategories);
-        updateURL(selectedCategories, updatedSubCategories);
+    const toggleSubCategory = (subCategory) => {
+        setSelectedSubCategories(prev => 
+            prev.includes(subCategory)
+                ? prev.filter(item => item !== subCategory)
+                : [...prev, subCategory]
+        );
     };
 
     // URL'yi güncelle
-    const updateURL = (categories, subCategories) => {
+    useEffect(() => {
         const queryParams = new URLSearchParams();
-        if (categories.length > 0) {
-            queryParams.set('category', categories[0]); // İlk kategori parametresi
-        }
-        if (subCategories.length > 0) {
-            queryParams.set('subCategory', subCategories[0]); // İlk alt kategori parametresi
-        }
+        
+        // Tüm seçili kategorileri ekle
+        selectedCategories.forEach(cat => {
+            queryParams.append('category', cat);
+        });
+        
+        // Tüm seçili alt kategorileri ekle
+        selectedSubCategories.forEach(subCat => {
+            queryParams.append('subCategory', subCat);
+        });
+
         navigate(`?${queryParams.toString()}`, { replace: true });
-    };
+    }, [selectedCategories, selectedSubCategories, navigate]);
 
     // Filtreleme işlemi
     const applyFilter = () => {
-        let productsCopy = [...products];  // Başlangıçta tüm ürünleri al
+        let filtered = [...products];
 
         // Arama filtresi
         if (showSearch && search) {
-            productsCopy = productsCopy.filter(item => item.name.toLowerCase().includes(search.toLowerCase()));
-        }
-
-        // Kategori filtresi
-        if (selectedCategories.length > 0) {
-            productsCopy = productsCopy.filter(item =>
-                selectedCategories.includes(item.category._id.toString())  // item.category._id ile karşılaştır
+            filtered = filtered.filter(item => 
+                item.name.toLowerCase().includes(search.toLowerCase())
             );
         }
 
-        // Alt kategori filtresi
+        // Kategori filtresi (en az bir kategori seçiliyse)
+        if (selectedCategories.length > 0) {
+            filtered = filtered.filter(item =>
+                selectedCategories.includes(item.category._id.toString())
+            );
+        }
+
+        // Alt kategori filtresi (en az bir alt kategori seçiliyse)
         if (selectedSubCategories.length > 0) {
-            productsCopy = productsCopy.filter(item =>
+            filtered = filtered.filter(item =>
                 selectedSubCategories.includes(item.subCategory)
             );
         }
 
-        setFilterProducts(productsCopy);  // Filtrelenmiş ürünleri state'e kaydet
+        setFilterProducts(filtered);
     };
 
-    // Sıralama işlemi
-    
+    // Filtreleri sıfırla
+    const resetFilters = () => {
+        setSelectedCategories([]);
+        setSelectedSubCategories([]);
+        setCurrentPage(1);
+    };
+
+    // Filtre değişikliklerinde uygula
+    useEffect(() => {
+        if (!isLoading) {
+            applyFilter();
+        }
+    }, [selectedCategories, selectedSubCategories, search, showSearch, products, isLoading]);
+
+    // Ürünler değiştiğinde filtre listesini güncelle
+    useEffect(() => {
+        if (!isLoading) {
+            setFilterProducts([...products]);
+        }
+    }, [products, isLoading]);
 
     // Pagination için ürünleri dilimle
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -136,50 +176,51 @@ const Collection = () => {
         pageNumbers.push(i);
     }
 
-    // Sayfa değiştirme fonksiyonu
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-    useEffect(() => {
-        if (!isLoading) {
-            applyFilter();
-        }
-    }, [selectedCategories, selectedSubCategories, search, showSearch, products, isLoading]);
-
-
-
-    useEffect(() => {
-        if (!isLoading) {
-            setFilterProducts([...products]);
-        }
-    }, [products, isLoading]);
+    // Mevcut kategorilere ait alt kategorileri bul
+    const getAvailableSubCategories = () => {
+        return categories
+            .filter(cat => selectedCategories.includes(cat._id.toString()))
+            .flatMap(cat => cat.subCategories)
+            .filter((subCat, index, self) => self.indexOf(subCat) === index); // Tekilleri al
+    };
 
     if (isLoading) {
-        return <div>Yükleniyor...</div>;
+        return <div className="flex justify-center items-center h-64">Yükleniyor...</div>;
     }
 
     return (
-        <div className='flex flex-col sm:flex-row gap-1 sm:gap-10 pt-10 border-t'>
+        <div ref={topRef} className='flex flex-col sm:flex-row gap-1 sm:gap-10 pt-10 border-t'>
             {/* Filter Options */}
             <div className='min-w-60'>
-                <p onClick={() => setShowFilter(!showFilter)} className='my-2 text-xl flex items-center cursor-pointer gap-2'>
-                    FİLTRELE
-                    <img src={assets.dropdown_icon} className={`h-3 sm:hidden ${showFilter ? 'rotate-90' : ''}`} alt="" />
-                </p>
+                <div className='flex justify-between items-center'>
+                    <p onClick={() => setShowFilter(!showFilter)} className='my-2 text-xl flex items-center cursor-pointer gap-2'>
+                        FİLTRELE
+                        <img src={assets.dropdown_icon} className={`h-3 sm:hidden ${showFilter ? 'rotate-90' : ''}`} alt="" />
+                    </p>
+                    {(selectedCategories.length > 0 || selectedSubCategories.length > 0) && (
+                        <button 
+                            onClick={resetFilters}
+                            className="text-xs text-orangeBrand hover:underline"
+                        >
+                            Filtreleri Temizle
+                        </button>
+                    )}
+                </div>
 
                 {/* Kategori Filtresi */}
                 <div className={`border border-gray-300 pl-5 py-3 mt-6 ${showFilter ? '' : 'hidden'} sm:block`}>
                     <p className='mb-3 text-sm font-medium'>KATEGORİLER</p>
                     <div className='flex flex-col gap-2 text-sm font-light text-gray-700'>
                         {categories.map((category) => (
-                            <p key={category._id} className='flex gap-2'>
+                            <label key={category._id} className='flex items-center gap-2 cursor-pointer'>
                                 <input
                                     type="checkbox"
-                                    value={category._id}
-                                    onChange={toggleCategory}
                                     checked={selectedCategories.includes(category._id.toString())}
+                                    onChange={() => toggleCategory(category._id.toString())}
+                                    className="accent-orangeBrand"
                                 />
-                                {category.name}
-                            </p>
+                                <span>{category.name}</span>
+                            </label>
                         ))}
                     </div>
                 </div>
@@ -188,59 +229,79 @@ const Collection = () => {
                 {selectedCategories.length > 0 && (
                     <div className={`border border-gray-300 pl-5 py-3 mt-5 ${showFilter ? '' : 'hidden'} sm:block`}>
                         <p className='mb-3 text-sm font-medium'>ALT KATEGORİLER</p>
-                        <div className='flex flex-col gap-2 text-sm font-light text-gray-700'>
-                            {categories
-                                .filter(cat => selectedCategories.includes(cat._id.toString()))
-                                .map(cat => (
-                                    cat.subCategories.map((subCategory, index) => (
-                                        <p key={index} className='flex gap-2'>
-                                            <input
-                                                type="checkbox"
-                                                value={subCategory}
-                                                onChange={toggleSubCategory}
-                                                checked={selectedSubCategories.includes(subCategory)}
-                                            />
-                                            {subCategory}
-                                        </p>
-                                    ))
+                        {getAvailableSubCategories().length > 0 ? (
+                            <div className='flex flex-col gap-2 text-sm font-light text-gray-700'>
+                                {getAvailableSubCategories().map((subCategory, index) => (
+                                    <label key={index} className='flex items-center gap-2 cursor-pointer'>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedSubCategories.includes(subCategory)}
+                                            onChange={() => toggleSubCategory(subCategory)}
+                                            className="accent-orangeBrand"
+                                        />
+                                        <span>{subCategory}</span>
+                                    </label>
                                 ))}
-                        </div>
+                            </div>
+                        ) : (
+                            <p className="text-xs text-gray-500">Bu kategoride alt kategori bulunmamaktadır</p>
+                        )}
                     </div>
                 )}
             </div>
 
             {/* Right Side */}
             <div className='flex-1'>
-              
-            <div className='flex justify-between text-base sm:text-2xl mb-4'>
+                <div className='flex justify-between text-base sm:text-2xl mb-4'>
                     <Title text1={'TÜM'} text2={'ÜRÜNLER'} />
-                   
+                    <p className="text-sm text-gray-600 self-end">
+                        {filterProducts.length} ürün bulundu
+                    </p>
                 </div>
-                {/* Ürünleri Listele */}
-                <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 gap-y-6'>
-                    {currentItems.map((item, index) => (
-                        <ProductItem key={index} {...item} />
-                    ))}
-                </div>
-
-                {/* Pagination Butonları */}
-                <div className="flex justify-center mt-10">
-                    <nav>
-                        <ul className="flex gap-2">
-                            {pageNumbers.map((number) => (
-                                <li key={number}>
-                                    <button
-                                        onClick={() => paginate(number)}
-                                        className={`px-3 py-1 border rounded-sm ${currentPage === number ? "bg-orangeBrand text-white" : "bg-white text-black"
-                                            }`}
-                                    >
-                                        {number}
-                                    </button>
-                                </li>
+                
+                {/* Ürün Listesi veya Boş Mesaj */}
+                {currentItems.length > 0 ? (
+                    <>
+                        <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 gap-y-6'>
+                            {currentItems.map((item, index) => (
+                                <ProductItem key={index} {...item} />
                             ))}
-                        </ul>
-                    </nav>
-                </div>
+                        </div>
+
+                        {/* Pagination Butonları */}
+                        {pageNumbers.length > 1 && (
+                            <div className="flex justify-center mt-10">
+                                <nav>
+                                    <ul className="flex gap-2">
+                                        {pageNumbers.map((number) => (
+                                            <li key={number}>
+                                                <button
+                                                    onClick={() => paginate(number)}
+                                                    className={`px-3 py-1 border rounded-sm ${currentPage === number ? "bg-orangeBrand text-white" : "bg-white text-black"}`}
+                                                >
+                                                    {number}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </nav>
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <img src={assets.empty_icon} alt="Empty" className="w-32 h-32 opacity-50" />
+                        <p className="text-lg text-gray-500 mt-4">Ürün bulunamadı</p>
+                        {(selectedCategories.length > 0 || selectedSubCategories.length > 0) && (
+                            <button 
+                                onClick={resetFilters}
+                                className="mt-4 px-4 py-2 bg-orangeBrand text-white rounded hover:bg-orange-600 transition"
+                            >
+                                Filtreleri Temizle
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

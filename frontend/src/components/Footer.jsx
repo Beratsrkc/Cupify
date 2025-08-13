@@ -6,7 +6,7 @@ import { FaInstagram, FaFacebook, FaYoutube, FaEnvelope } from 'react-icons/fa';
 const Footer = () => {
     return (
         <div>
-            <div className='flex flex-col sm:grid grid-cols-[3fr_1fr_1fr] gap-14 my-10 mt-40 text-sm'>
+            <div className='flex flex-col sm:grid grid-cols-[3fr_1fr_1fr] gap-14 my-10 mt-32 text-sm'>
                 <div>
                     <img src={assets.Cupify_logo} className='mb-5 w-28 lg:w-32' alt="CUPIFY Tarım Logo" />
                     <p className='w-full md:w-2/3 text-gray-600'>
@@ -69,7 +69,7 @@ const Footer = () => {
                     <p className='text-md'>Kabul Edilen Ödeme Yöntemleri</p>
                 </div>
                 <div className="flex justify-center items-center gap-4 my-6">
-                    <img src={assets.logo_band} alt="Ödeme Yöntemleri" className='w-72' />
+                    <img src={assets.tekparca2} alt="Ödeme Yöntemleri" className='w-72' />
                 </div>
             </div>
 

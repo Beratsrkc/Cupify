@@ -20,8 +20,6 @@ import visa from "./visa.png";
 import mastercard from "./Mastercard-logo.webp";
 import contact_img from "./contact_img.png";
 import cross_icon from "./cross_icon.png";
-import logo_band from "./logo_band_colored@3x.png";
-import logo_iyzico from "./iyzico_ile_ode_colored_horizontal.png";
 import Cupify_logo_buyuk from "./logo-color.png";
 import bardakresim from "./bardakresim.png";
 import bardakresim2 from "./bardakresim2.png";
@@ -56,6 +54,8 @@ import KartonKutular from "./KartonKutular.png";
 import Kaseler from "./Kaseler.png";
 import Bardaklar from "./Bardaklar.png";
 import KartonÇantlar from "./KartonÇantlar.png";
+import tekparcaLogolar from "./tekparca-logolar-2.jpg";
+import tekparca2 from "./tekparca-2.jpg";
 
 export const assets = {
   bg0,
@@ -66,6 +66,8 @@ export const assets = {
   bg5,
   bg6,
   bg7,
+  tekparca2,
+  tekparcaLogolar,
   CafeRestaurant,
   KartonKutular,
   Kaseler,
@@ -92,8 +94,6 @@ export const assets = {
   bardakresim3,
   bardakresim4,
   bardakresim,
-  logo_iyzico,
-  logo_band,
   Cupify_logo,
   cart_icon,
   dropdown_icon,
