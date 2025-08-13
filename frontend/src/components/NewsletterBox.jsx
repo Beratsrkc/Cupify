@@ -44,7 +44,7 @@ const NewsletterBox = () => {
                         {/* İletişim Butonu */}
                         <button
                             onClick={onContactHandler}
-                            className="w-full rounded-lg bg-red-600 px-4 py-2 text-white font-semibold hover:bg-red-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 lg:w-2/5"
+                            className="w-full rounded-lg bg-orangeBrand px-4 py-2 text-white font-semibold hover:bg-red-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 lg:w-2/5"
                         >
                             İletişime Geç
                         </button>

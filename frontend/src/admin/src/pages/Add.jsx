@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { assets } from '../assets/assets';
-import { backendUrl } from '../App';
-
+import { backendUrl, } from "../config";
 const Add = ({ token }) => {
   const [image1, setImage1] = useState(null);
   const [image2, setImage2] = useState(null);
@@ -300,7 +299,7 @@ const Add = ({ token }) => {
                 <button
                   type="button"
                   onClick={addNewCategory}
-                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                  className="bg-orangeBrand text-white px-4 py-2 rounded hover:bg-red-700"
                 >
                   Kategori Ekle
                 </button>
@@ -330,7 +329,7 @@ const Add = ({ token }) => {
                 <button
                   type="button"
                   onClick={addNewSubCategory}
-                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                  className="bg-orangeBrand text-white px-4 py-2 rounded hover:bg-red-700"
                 >
                   Alt Kategori Ekle
                 </button>

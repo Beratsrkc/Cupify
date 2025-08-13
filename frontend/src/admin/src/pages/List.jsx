@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { backendUrl, currency } from '../App';
-import EditModal from '../compoments/EditModal';
+import { backendUrl, currency } from "../config";
+import EditModal from '../components/EditModal';
 
 const List = ({ token }) => {
   const [list, setList] = useState([]);

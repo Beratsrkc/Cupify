@@ -5,7 +5,12 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        orangeBrand: "#ff7f00",      // ana renk
+        orangeBrandDark: "#e67000",  // hover için koyu ton
+      },
+    },
   },
   plugins: [],
 }

@@ -37,7 +37,7 @@ const Cart = () => {
         <p className="text-lg sm:text-2xl font-semibold mb-4">Sepetinizde ürün bulunmamaktadır.</p>
         <button
           onClick={() => navigate('/urunler')}
-          className="bg-red-600 text-white text-sm px-8 py-3 rounded-lg hover:bg-red-700 transition-colors"
+          className="bg-orangeBrand text-white text-sm px-8 py-3 rounded-lg hover:bg-red-700 transition-colors"
         >
           Alışverişe Başla
         </button>

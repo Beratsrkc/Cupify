@@ -231,7 +231,7 @@ const Collection = () => {
                                 <li key={number}>
                                     <button
                                         onClick={() => paginate(number)}
-                                        className={`px-3 py-1 border rounded-sm ${currentPage === number ? "bg-red-600 text-white" : "bg-white text-black"
+                                        className={`px-3 py-1 border rounded-sm ${currentPage === number ? "bg-orangeBrand text-white" : "bg-white text-black"
                                             }`}
                                     >
                                         {number}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { backendUrl } from '../App';
+import { backendUrl } from "../config";
 
 const EditModal = ({ product, onClose, onUpdate }) => {
   // Temel bilgiler
@@ -263,7 +263,8 @@ const EditModal = ({ product, onClose, onUpdate }) => {
                         <button
                           type="button"
                           onClick={() => removeCoverColor(index)}
-                          className="text-red-600 hover:text-red-700"
+                          className="text-orangeBrand hover:text-orangeBrandDark"
+
                         >
                           X
                         </button>
@@ -305,7 +306,7 @@ const EditModal = ({ product, onClose, onUpdate }) => {
                 <button
                   type="button"
                   onClick={() => removeSize(index)}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg"
+                  className="bg-orangeBrand text-white px-4 py-2 rounded-lg"
                 >
                   Sil
                 </button>
@@ -355,7 +356,7 @@ const EditModal = ({ product, onClose, onUpdate }) => {
                 <button
                   type="button"
                   onClick={() => removeQuantity(index)}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg"
+                  className="bg-orangeBrand text-white px-4 py-2 rounded-lg"
                 >
                   Sil
                 </button>
@@ -398,7 +399,7 @@ const EditModal = ({ product, onClose, onUpdate }) => {
                 <button
                   type="button"
                   onClick={() => removePrintingOption(index)}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg"
+                  className="bg-orangeBrand text-white px-4 py-2 rounded-lg"
                 >
                   Sil
                 </button>

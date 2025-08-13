@@ -1,8 +1,24 @@
-import { defineConfig } from 'vite'
-import preact from '@preact/preset-vite'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 
-// https://vite.dev/config/
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 export default defineConfig({
-  plugins: [preact()],
-  server :{port:5173}
-})
+  plugins: [react()],
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+      '@admin': resolve(__dirname, './src/admin/src')
+    }
+  },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true
+  }
+});
