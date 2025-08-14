@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { ShopContext } from '../context/ShopContext';
 import { Link } from 'react-router-dom';
 import { assets } from '../assets/assets';
-
+import { AiOutlineReload } from "react-icons/ai";
 const generateSlug = (text) => {
   return text
     .toLowerCase()
@@ -100,12 +100,23 @@ const ProductItem = ({ id, images = [], name, sizes, quantities, coverOptions })
               zIndex: 1,
             }}
           />
-          <img
-            className='w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 relative z-10'
-            src={imageUrl}
-            alt={name}
-            loading="lazy"
-          />
+          {!imageUrl && (
+  <div className="w-full h-72 bg-gray-200 animate-pulse rounded-md"></div>
+)}
+
+{imageUrl && (
+  <img 
+  className='w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 relative z-10'
+  src={imageUrl || '/assets/placeholder.png'} // Fallback ekleyin
+  alt={name}
+  loading="lazy"
+  decoding="async" // Tarayıcıya decode işlemini async yapmasını söyler
+  style={{ // Yüklenene kadar arkaplan rengi
+    opacity: imageUrl ? 1 : 0.8, // Yüklenmemişse hafif transparan
+    transition: 'opacity 0.3s ease' // Yumuşak geçiş
+  }}
+/>
+)}
         </div>
         
         <p className='pt-3 pb-1 text-base text-gray-800'>{name}</p>
