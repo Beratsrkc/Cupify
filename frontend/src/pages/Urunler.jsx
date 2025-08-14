@@ -7,11 +7,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { PiEmptyFill } from "react-icons/pi";
+
 const Collection = () => {
   const { products, search, showSearch, backendUrl, token, isLoading } =
     useContext(ShopContext);
   const [showFilter, setShowFilter] = useState(false);
   const [filterProducts, setFilterProducts] = useState([]);
+  const [sortedProducts, setSortedProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
@@ -148,6 +150,23 @@ const Collection = () => {
     setFilterProducts(filtered);
   };
 
+  // Sıralama işlemi
+  useEffect(() => {
+    if (filterProducts.length > 0) {
+      const sorted = [...filterProducts].sort((a, b) => {
+        // Bestseller olanları öne al
+        if (a.bestseller && !b.bestseller) return -1;
+        if (!a.bestseller && b.bestseller) return 1;
+        
+        // Son eklenen ürünleri öne al (isteğe bağlı)
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+      setSortedProducts(sorted);
+    } else {
+      setSortedProducts([]);
+    }
+  }, [filterProducts]);
+
   // Filtreleri sıfırla
   const resetFilters = () => {
     setSelectedCategories([]);
@@ -179,11 +198,11 @@ const Collection = () => {
   // Pagination için ürünleri dilimle
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filterProducts.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = sortedProducts.slice(indexOfFirstItem, indexOfLastItem);
 
   // Sayfa numaralarını hesapla
   const pageNumbers = [];
-  for (let i = 1; i <= Math.ceil(filterProducts.length / itemsPerPage); i++) {
+  for (let i = 1; i <= Math.ceil(sortedProducts.length / itemsPerPage); i++) {
     pageNumbers.push(i);
   }
 
@@ -295,7 +314,7 @@ const Collection = () => {
         <div className="flex justify-between text-base sm:text-2xl mb-4">
           <Title text1={"TÜM"} text2={"ÜRÜNLER"} />
           <p className="text-sm text-gray-600 self-end">
-            {filterProducts.length} ürün bulundu
+            {sortedProducts.length} ürün bulundu
           </p>
         </div>
 
@@ -307,6 +326,7 @@ const Collection = () => {
                 <ProductItem
                   key={`${item.id}-${item.name}`}
                   {...item}
+                  bestsellerBadge={item.bestseller}
                 />
               ))}
             </div>

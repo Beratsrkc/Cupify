@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
 import { ShopContext } from "../context/ShopContext";
 import { Link } from "react-router-dom";
 import { assets } from "../assets/assets";
@@ -32,10 +32,13 @@ const ProductItem = React.memo(({
   sizes = [],
   quantities = [],
   coverOptions,
+  bestsellerBadge,
 }) => {
   const { currency } = useContext(ShopContext);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const imgRef = useRef(null);
   
   const imageUrl = images?.[0] || "/assets/placeholder.png";
   const placeholderBackground = {
@@ -43,6 +46,13 @@ const ProductItem = React.memo(({
     backgroundSize: "cover",
     backgroundPosition: "center",
   };
+
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete) {
+      handleImageLoad();
+    }
+  }, []);
 
   // En iyi indirimi bul
   const findBestDiscount = () => {
@@ -83,7 +93,7 @@ const ProductItem = React.memo(({
     return sizes.map((size) => size.label).join(", ");
   };
 
-  const productSlug = `${generateSlug(name)}-${id}`; // ID ekleyerek benzersiz slug oluştur
+  const productSlug = `${generateSlug(name)}-${id}`;
 
   const handleImageLoad = () => {
     setImageLoaded(true);
@@ -95,17 +105,38 @@ const ProductItem = React.memo(({
     setImageLoaded(false);
   };
 
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    // Hover olduğunda resmi tekrar yükle
+    if (!imageLoaded && !imageError && imgRef.current) {
+      imgRef.current.src = imageUrl;
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
+
   return (
     <Link
       className="text-gray-700 cursor-pointer relative group block"
       to={`/product/${productSlug}`}
       aria-label={`${name} ürün detayları`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="flex flex-col relative h-full">
         {/* İndirim etiketi */}
         {bestDiscount > 0 && (
           <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded z-20">
             %{bestDiscount} İNDİRİM
+          </div>
+        )}
+
+        {/* Bestseller etiketi */}
+        {bestsellerBadge && (
+          <div className="absolute top-2 left-2 bg-orangeBrand text-white text-xs px-2 py-1 rounded z-20">
+            Çok Satan
           </div>
         )}
 
@@ -126,9 +157,10 @@ const ProductItem = React.memo(({
 
           {/* Resim */}
           <img
+            ref={imgRef}
             className={`w-full h-full object-contain transition-transform duration-300 relative z-20 ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
-            } group-hover:scale-105`}
+            } ${isHovered ? 'scale-105' : ''}`}
             src={imageError ? "/assets/placeholder.png" : imageUrl}
             alt={name}
             loading="lazy"
