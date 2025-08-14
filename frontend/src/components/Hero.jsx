@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Slider from 'react-slick';
 import { assets } from '../assets/assets';
 import 'slick-carousel/slick/slick.css';
@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
     const navigate = useNavigate();
+    const [loadedImages, setLoadedImages] = useState({});
+    const [isLoading, setIsLoading] = useState(true);
 
     const settings = {
         dots: false,
@@ -70,49 +72,81 @@ const Hero = () => {
         }
     ];
 
+    // Resimleri önceden yükle
+    useEffect(() => {
+        const loadImages = async () => {
+            const imagePromises = slides.map(slide => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.src = slide.image;
+                    img.onload = () => {
+                        setLoadedImages(prev => ({
+                            ...prev,
+                            [slide.id]: true
+                        }));
+                        resolve();
+                    };
+                    img.onerror = () => resolve();
+                });
+            });
+
+            await Promise.all(imagePromises);
+            setIsLoading(false);
+        };
+
+        loadImages();
+    }, []);
+
     return (
-        <div className="w-full rounded-xl overflow-hidden  relative">
-            <Slider {...settings}>
-                {slides.map((slide) => (
-                    <div key={slide.id} className="relative w-full h-[60vh] md:h-[65vh] lg:h-[70vh] xl:h-[75vh]">
-                        {/* Overlay */}
-                        <div 
-                            className="absolute inset-0 z-10" 
-                            style={{ 
-                                background: `linear-gradient(to right, ${slide.overlay}, ${slide.overlay})`
-                            }}
-                        />
-                        
-                        {/* Background Image */}
-                        <img
-                            src={slide.image}
-                            alt={`${slide.title} - ${slide.subtitle}`}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                        />
-                        
-                        {/* Content */}
-                        <div className="absolute inset-0 z-20 flex flex-col justify-center items-start px-6 sm:px-10 md:px-16 lg:px-24 text-white">
-                            <div className="max-w-2xl space-y-4 md:space-y-6">
-                                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
-                                    {slide.title}
-                                </h1>
-                                <p className="text-lg sm:text-xl md:text-2xl opacity-90">
-                                    {slide.subtitle}
-                                </p>
-                                {slide.buttonText && (
-                                    <button
-                                        onClick={() => handleSeeAllClick(slide.category)}
-                                        className="mt-4 px-8 py-3 bg-white text-orange-600 font-semibold rounded-full hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                                    >
-                                        {slide.buttonText}
-                                    </button>
-                                )}
+        <div className="w-full rounded-xl overflow-hidden relative">
+            {isLoading ? (
+                <div className="w-full h-[60vh] md:h-[65vh] lg:h-[70vh] xl:h-[75vh] bg-gray-200 animate-pulse"></div>
+            ) : (
+                <Slider {...settings}>
+                    {slides.map((slide) => (
+                        <div key={slide.id} className="relative w-full h-[60vh] md:h-[65vh] lg:h-[70vh] xl:h-[75vh]">
+                            {/* Overlay */}
+                            <div 
+                                className="absolute inset-0 z-10" 
+                                style={{ 
+                                    background: `linear-gradient(to right, ${slide.overlay}, ${slide.overlay})`
+                                }}
+                            />
+                            
+                            {/* Background Image */}
+                            <img
+                                src={slide.image}
+                                alt={`${slide.title} - ${slide.subtitle}`}
+                                className={`w-full h-full object-cover transition-opacity duration-500 ${
+                                    loadedImages[slide.id] ? 'opacity-100' : 'opacity-0'
+                                }`}
+                                loading="eager" // lazy yerine eager kullanıyoruz
+                                decoding="async"
+                            />
+                            
+                            {/* Content */}
+                            <div className="absolute inset-0 z-20 flex flex-col justify-center items-start px-6 sm:px-10 md:px-16 lg:px-24 text-white">
+                                <div className="max-w-2xl space-y-4 md:space-y-6">
+                                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
+                                        {slide.title}
+                                    </h1>
+                                    <p className="text-lg sm:text-xl md:text-2xl opacity-90">
+                                        {slide.subtitle}
+                                    </p>
+                                    {slide.buttonText && (
+                                        <button
+                                            onClick={() => handleSeeAllClick(slide.category)}
+                                            className="mt-4 px-8 py-3 bg-white text-orange-600 font-semibold rounded-full hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                                        >
+                                            {slide.buttonText}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </Slider>
+                    ))}
+                </Slider>
+            )}
             
             {/* Custom dots position */}
             <style jsx="true" global="true">{`
