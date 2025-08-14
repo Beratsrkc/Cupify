@@ -1,8 +1,9 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import { Link } from "react-router-dom";
 import { assets } from "../assets/assets";
 import { AiOutlineReload } from "react-icons/ai";
+
 const generateSlug = (text) => {
   return text
     .toLowerCase()
@@ -24,43 +25,46 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-const ProductItem = ({
+const ProductItem = React.memo(({
   id,
   images = [],
   name,
-  sizes,
-  quantities,
+  sizes = [],
+  quantities = [],
   coverOptions,
 }) => {
   const { currency } = useContext(ShopContext);
-  const imageUrl = images?.[0] || "/assets/default-image.jpg";
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  
+  const imageUrl = images?.[0] || "/assets/placeholder.png";
+  const placeholderBackground = {
+    backgroundImage: `url(${assets.cupifybackground})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  };
 
   // En iyi indirimi bul
   const findBestDiscount = () => {
-    if (!quantities) return 0;
+    if (!quantities.length) return 0;
     return Math.max(...quantities.map((q) => q.discount || 0));
   };
 
-  // Fiyat aralığını hesapla (indirimleri de dikkate alarak)
+  // Fiyat aralığını hesapla
   const calculatePriceRange = () => {
-    if (!sizes || !quantities) return { minPrice: 0, maxPrice: 0 };
+    if (!sizes.length || !quantities.length) return { minPrice: 0, maxPrice: 0 };
 
     let minPrice = Infinity;
     let maxPrice = 0;
 
     sizes.forEach((size) => {
       quantities.forEach((quantity) => {
-        // İndirimli fiyatı hesapla
-        const discountedPrice =
-          size.price * quantity.label * (1 - (quantity.discount || 0) / 100);
+        const discountedPrice = size.price * quantity.label * (1 - (quantity.discount || 0) / 100);
         const coverPriceValue = coverOptions?.price || 0;
 
-        // Minimum fiyat (kapak seçeneği olmadan)
         if (discountedPrice < minPrice) minPrice = discountedPrice;
-
-        // Maksimum fiyat (kapak seçeneği ile)
-        const priceWithCover =
-          discountedPrice + coverPriceValue * quantity.label;
+        
+        const priceWithCover = discountedPrice + coverPriceValue * quantity.label;
         if (priceWithCover > maxPrice) maxPrice = priceWithCover;
       });
     });
@@ -75,18 +79,29 @@ const ProductItem = ({
   const bestDiscount = findBestDiscount();
 
   const formatSizes = () => {
-    if (!sizes || sizes.length === 0) return "Ebat Seçeneği Yok";
+    if (!sizes.length) return "Ebat Seçeneği Yok";
     return sizes.map((size) => size.label).join(", ");
   };
 
-  const productSlug = generateSlug(name);
+  const productSlug = `${generateSlug(name)}-${id}`; // ID ekleyerek benzersiz slug oluştur
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoaded(false);
+  };
 
   return (
     <Link
-      className="text-gray-700 cursor-pointer relative group"
+      className="text-gray-700 cursor-pointer relative group block"
       to={`/product/${productSlug}`}
+      aria-label={`${name} ürün detayları`}
     >
-      <div className="flex flex-col relative">
+      <div className="flex flex-col relative h-full">
         {/* İndirim etiketi */}
         {bestDiscount > 0 && (
           <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded z-20">
@@ -94,68 +109,65 @@ const ProductItem = ({
           </div>
         )}
 
-        <div className="w-full h-72 border rounded-md overflow-hidden relative">
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              backgroundImage: `url(${assets.cupifybackground})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              opacity: 0.5,
-              zIndex: 1,
-            }}
+        {/* Resim Container */}
+        <div className="w-full h-72 border rounded-md overflow-hidden relative bg-gray-100">
+          {/* Arkaplan ve yükleme efekti */}
+          <div 
+            className="absolute inset-0 z-0 opacity-50"
+            style={placeholderBackground}
           />
-          {!imageUrl && (
-            <div className="w-full h-72 bg-gray-200 animate-pulse rounded-md"></div>
-          )}
-
-          {imageUrl && (
-            <img
-              className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 relative z-10"
-              src={imageUrl || "/assets/placeholder.png"} // Fallback ekleyin
-              alt={name}
-              loading="lazy"
-              decoding="async" // Tarayıcıya decode işlemini async yapmasını söyler
-              style={{
-                // Yüklenene kadar arkaplan rengi
-                opacity: imageUrl ? 1 : 0.8, // Yüklenmemişse hafif transparan
-                transition: "opacity 0.3s ease", // Yumuşak geçiş
-              }}
-            />
-          )}
-        </div>
-
-        <p className="pt-3 pb-1 text-base text-gray-800">{name}</p>
-        <p className="text-sm text-gray-500 pb-1">{formatSizes()}</p>
-
-        <div className="flex gap-3 items-center">
-          {minPrice === maxPrice ? (
-            <p className="text-base font-medium text-black">
-              {currency}
-              {formatPrice(minPrice)}
-            </p>
-          ) : (
-            <div>
-              <p className="text-base font-medium text-black">
-                {currency}
-                {formatPrice(minPrice)} - {currency}
-                {formatPrice(maxPrice)}
-              </p>
-              {bestDiscount > 0 && (
-                <p className="text-xs text-gray-500">
-                  %{bestDiscount}'e varan indirimler
-                </p>
-              )}
+          
+          {/* Yükleme animasyonu */}
+          {!imageLoaded && !imageError && (
+            <div className="absolute inset-0 flex items-center justify-center z-10">
+              <AiOutlineReload className="animate-spin text-gray-400" />
             </div>
           )}
+
+          {/* Resim */}
+          <img
+            className={`w-full h-full object-contain transition-transform duration-300 relative z-20 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            } group-hover:scale-105`}
+            src={imageError ? "/assets/placeholder.png" : imageUrl}
+            alt={name}
+            loading="lazy"
+            decoding="async"
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+          />
+        </div>
+
+        {/* Ürün Bilgileri */}
+        <div className="pt-3 flex-1">
+          <h3 className="text-base font-medium text-gray-800 line-clamp-2">{name}</h3>
+          <p className="text-sm text-gray-500 mt-1">{formatSizes()}</p>
+          
+          <div className="mt-2">
+            {minPrice === maxPrice ? (
+              <p className="text-base font-medium text-black">
+                {currency}
+                {formatPrice(minPrice)}
+              </p>
+            ) : (
+              <div>
+                <p className="text-base font-medium text-black">
+                  {currency}
+                  {formatPrice(minPrice)} - {currency}
+                  {formatPrice(maxPrice)}
+                </p>
+                {bestDiscount > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    %{bestDiscount}'e varan indirimler
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </Link>
   );
-};
+});
 
 export default ProductItem;
