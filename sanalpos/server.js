@@ -23,36 +23,37 @@ const allowedOrigins = [
     'http://localhost:5173', 
     'http://localhost:5174',
     'https://cupify.com.tr', 
-    'https://www.cupify.com.tr', 
-    'https://cupify-adminpanel.vercel.app', 
-    'https://admin.cupify.com.tr', 
+    'https://www.cupify.com.tr',
 ];
   
 app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('CORS policy blocked this request'));
-        }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'UPDATE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'token'],
-    credentials: true,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS policy blocked this request'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'UPDATE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'token'],
+  credentials: true,
 }));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
+connectDB()
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+connectCloudinary();
+
+
 // PayTR Ödeme Rotası
+app.get('/', (req, res) => res.send('API is working'));
 app.post('/api/payment/paytr', payTRPayment);
 app.post('/api/payment/paytr/callback', payTRCallback);
-
-// API test rotası
-app.get('/', (req, res) => {
-    res.send('API is working');
-});
 
 // Router'ları kullanma
 app.use('/api/user', userRouter);
@@ -63,9 +64,11 @@ app.use('/api/category', categoryRouter);
 app.use('/api/images', imageRoutes);
 app.use("/api/blogs", blogRouter);
 
-// Veritabanı ve Cloudinary bağlantıları
-connectDB();
-connectCloudinary();
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
 
 // Sunucuyu başlat
 const PORT = process.env.PORT || 3001;
