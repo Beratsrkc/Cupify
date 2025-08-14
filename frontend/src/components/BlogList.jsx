@@ -79,7 +79,7 @@ const BlogList = () => {
       </div>
 
       {/* Swiper Pagination Stilleri */}
-      <style jsx global>{`
+      <style jsx="true" global="true">{`
         .swiper-pagination-bullet {
           background-color: #cccc; /* red-500 */
           opacity: 1;

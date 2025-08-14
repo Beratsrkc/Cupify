@@ -115,7 +115,7 @@ const Hero = () => {
             </Slider>
             
             {/* Custom dots position */}
-            <style jsx global>{`
+            <style jsx="true" global="true">{`
                 .slick-dots {
                     bottom: 30px !important;
                 }
