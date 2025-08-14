@@ -6,7 +6,7 @@ import ProductItem from '../components/ProductItem';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-
+import { PiEmptyFill } from "react-icons/pi";
 const Collection = () => {
     const { products, search, showSearch, backendUrl, token, isLoading } = useContext(ShopContext);
     const [showFilter, setShowFilter] = useState(false);
@@ -290,7 +290,7 @@ const Collection = () => {
                     </>
                 ) : (
                     <div className="flex flex-col items-center justify-center py-20">
-                        <img src={assets.empty_icon} alt="Empty" className="w-32 h-32 opacity-50" />
+                        <PiEmptyFill className="w-32 h-32 opacity-50" />
                         <p className="text-lg text-gray-500 mt-4">Ürün bulunamadı</p>
                         {(selectedCategories.length > 0 || selectedSubCategories.length > 0) && (
                             <button 

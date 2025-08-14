@@ -17,10 +17,8 @@ const generateSlug = (text) => {
     .replace(/-+/g, "-");
 };
 
-// Fiyat formatlama fonksiyonu
 const formatPrice = (price) => {
   return new Intl.NumberFormat('tr-TR', {
-    style: 'decimal',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(price);
@@ -30,7 +28,13 @@ const ProductItem = ({ id, images = [], name, sizes, quantities, coverOptions })
   const { currency } = useContext(ShopContext);
   const imageUrl = images?.[0] || '/assets/default-image.jpg';
 
-  // Fiyat aralığını hesapla
+  // En iyi indirimi bul
+  const findBestDiscount = () => {
+    if (!quantities) return 0;
+    return Math.max(...quantities.map(q => q.discount || 0));
+  };
+
+  // Fiyat aralığını hesapla (indirimleri de dikkate alarak)
   const calculatePriceRange = () => {
     if (!sizes || !quantities) return { minPrice: 0, maxPrice: 0 };
   
@@ -39,15 +43,15 @@ const ProductItem = ({ id, images = [], name, sizes, quantities, coverOptions })
   
     sizes.forEach(size => {
       quantities.forEach(quantity => {
-        const basePrice = size.price * quantity.label;
+        // İndirimli fiyatı hesapla
+        const discountedPrice = size.price * quantity.label * (1 - (quantity.discount || 0) / 100);
         const coverPriceValue = coverOptions?.price || 0;
   
         // Minimum fiyat (kapak seçeneği olmadan)
-        const priceWithoutCover = basePrice;
-        if (priceWithoutCover < minPrice) minPrice = priceWithoutCover;
+        if (discountedPrice < minPrice) minPrice = discountedPrice;
   
         // Maksimum fiyat (kapak seçeneği ile)
-        const priceWithCover = basePrice + (coverPriceValue * quantity.label); // Kapak fiyatını adetle çarp
+        const priceWithCover = discountedPrice + (coverPriceValue * quantity.label);
         if (priceWithCover > maxPrice) maxPrice = priceWithCover;
       });
     });
@@ -59,8 +63,8 @@ const ProductItem = ({ id, images = [], name, sizes, quantities, coverOptions })
   };
 
   const { minPrice, maxPrice } = calculatePriceRange();
+  const bestDiscount = findBestDiscount();
 
-  // Ebat seçeneklerini formatla
   const formatSizes = () => {
     if (!sizes || sizes.length === 0) return "Ebat Seçeneği Yok";
     return sizes.map(size => size.label).join(", ");
@@ -70,18 +74,18 @@ const ProductItem = ({ id, images = [], name, sizes, quantities, coverOptions })
 
   return (
     <Link
-      className='text-gray-700 cursor-pointer relative'
+      className='text-gray-700 cursor-pointer relative group'
       to={`/product/${productSlug}`}
     >
       <div className='flex flex-col relative'>
-        {/* Çapraz Desenli Arka Plan */}
-        <div
-          className='w-full h-72 border rounded-md overflow-hidden relative'
-          style={{
-            position: 'relative', // Konumlandırma için gerekli
-          }}
-        >
-          {/* Arka Plan Resmi ve Opaklık Katmanı */}
+        {/* İndirim etiketi */}
+        {bestDiscount > 0 && (
+          <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded z-20">
+            %{bestDiscount} İNDİRİM
+          </div>
+        )}
+
+        <div className='w-full h-72 border rounded-md overflow-hidden relative'>
           <div
             style={{
               position: 'absolute',
@@ -89,32 +93,38 @@ const ProductItem = ({ id, images = [], name, sizes, quantities, coverOptions })
               left: 0,
               width: '100%',
               height: '100%',
-              backgroundImage: `url(${assets.cupifybackground})`, // assets'ten resmi al
+              backgroundImage: `url(${assets.cupifybackground})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
-              opacity: 0.5, // Opaklık: %80
-              zIndex: 1, // Arka plan resmi için zIndex: 1
+              opacity: 0.5,
+              zIndex: 1,
             }}
           />
-          {/* Ürün görseli */}
           <img
-            className='w-full h-full object-contain  hover:scale-110 transition-transform duration-300 relative z-10' // Ürün resmi için zIndex: 10
+            className='w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 relative z-10'
             src={imageUrl}
             alt={name}
+            loading="lazy"
           />
         </div>
-        {/* Ürün İsmi */}
+        
         <p className='pt-3 pb-1 text-base text-gray-800'>{name}</p>
-        {/* Ebat seçenekleri */}
         <p className='text-sm text-gray-500 pb-1'>{formatSizes()}</p>
-        {/* Fiyat */}
-        <div className='flex gap-3'>
+        
+        <div className='flex gap-3 items-center'>
           {minPrice === maxPrice ? (
-            <p className='text-base font-medium text-black'>{currency}{formatPrice(minPrice)}</p>
-          ) : (
             <p className='text-base font-medium text-black'>
-              {currency}{formatPrice(minPrice)} - {currency}{formatPrice(maxPrice)}
+              {currency}{formatPrice(minPrice)}
             </p>
+          ) : (
+            <div>
+              <p className='text-base font-medium text-black'>
+                {currency}{formatPrice(minPrice)} - {currency}{formatPrice(maxPrice)}
+              </p>
+              {bestDiscount > 0 && (
+                <p className="text-xs text-gray-500">%{bestDiscount}'e varan indirimler</p>
+              )}
+            </div>
           )}
         </div>
       </div>

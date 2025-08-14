@@ -22,9 +22,10 @@ const EditModal = ({ product, onClose, onUpdate }) => {
   const [newSizeLabel, setNewSizeLabel] = useState('');
   const [newSizePrice, setNewSizePrice] = useState(0);
 
-  // Sipariş adetleri
+  // Sipariş adetleri ve indirimler
   const [quantities, setQuantities] = useState(product.quantities || []);
   const [currentQuantity, setCurrentQuantity] = useState('');
+  const [currentDiscount, setCurrentDiscount] = useState(0);
 
   // Baskı seçenekleri
   const [printingOptions, setPrintingOptions] = useState(product.printingOptions || []);
@@ -92,17 +93,32 @@ const EditModal = ({ product, onClose, onUpdate }) => {
     setSizes(newSizes);
   };
 
-  // Sipariş adeti ekle
+  // Sipariş adeti ve indirim ekle
   const addQuantity = () => {
     if (currentQuantity) {
-      setQuantities([...quantities, { label: currentQuantity, multiplier: 1 }]);
+      setQuantities([
+        ...quantities, 
+        { 
+          label: currentQuantity, 
+          multiplier: 1,
+          discount: Number(currentDiscount) || 0
+        }
+      ]);
       setCurrentQuantity('');
+      setCurrentDiscount(0);
     }
   };
 
   // Sipariş adeti sil
   const removeQuantity = (index) => {
     const newQuantities = quantities.filter((_, i) => i !== index);
+    setQuantities(newQuantities);
+  };
+
+  // Miktar değişikliği
+  const handleQuantityChange = (index, field, value) => {
+    const newQuantities = [...quantities];
+    newQuantities[index][field] = field === 'discount' ? Number(value) : value;
     setQuantities(newQuantities);
   };
 
@@ -122,28 +138,45 @@ const EditModal = ({ product, onClose, onUpdate }) => {
 
   // Form gönderimi
   const handleSubmit = (e) => {
-    e.preventDefault();
-    onUpdate({
-      name,
-      description,
-      category,
-      subCategory,
-      bestseller,
-      coverOptions: {
-        price: includeCover ? coverPrice : 0,
-        colors: includeCover ? coverColors : []
-      },
-      sizes,
-      quantities,
-      printingOptions
-    });
+  e.preventDefault();
+  
+  // Verileri stringify etmeden önce işle
+  const updateData = {
+    name,
+    description,
+    category,
+    subCategory,
+    bestseller,
+    coverOptions: {
+      price: includeCover ? coverPrice : 0,
+      colors: includeCover ? coverColors : []
+    },
+    sizes,
+    quantities: quantities.map(q => ({
+      label: q.label,
+      multiplier: q.multiplier,
+      discount: q.discount
+    })),
+    printingOptions
   };
 
+  // Verileri stringify et (eğer API bekliyorsa)
+  const stringifiedData = {
+    ...updateData,
+    coverOptions: JSON.stringify(updateData.coverOptions),
+    sizes: JSON.stringify(updateData.sizes),
+    quantities: JSON.stringify(updateData.quantities),
+    printingOptions: JSON.stringify(updateData.printingOptions)
+  };
+
+  onUpdate(stringifiedData);
+};
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Ürünü Güncelle</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <h2 className="text-xl font-bold mb-4">Ürün Düzenle</h2>
+        
+        <form onSubmit={handleSubmit}>
           {/* Temel Bilgiler */}
           <div>
             <p className="mb-2">Ürün Adı</p>
@@ -264,7 +297,6 @@ const EditModal = ({ product, onClose, onUpdate }) => {
                           type="button"
                           onClick={() => removeCoverColor(index)}
                           className="text-orangeBrand hover:text-orangeBrandDark"
-
                         >
                           X
                         </button>
@@ -337,38 +369,60 @@ const EditModal = ({ product, onClose, onUpdate }) => {
             </div>
           </div>
 
-          {/* Sipariş Adetleri */}
-          <div>
-            <p className="mb-2">Sipariş Adetleri</p>
+          {/* Sipariş Adetleri ve İndirimler */}
+          <div className="mb-4">
+            <p className="mb-2">Sipariş Miktarları ve İndirimler</p>
             {quantities.map((qty, index) => (
-              <div key={index} className="flex gap-2 mb-2">
+              <div key={index} className="flex gap-2 mb-2 items-center">
                 <input
                   type="text"
                   value={qty.label}
-                  onChange={(e) => {
-                    const newQuantities = [...quantities];
-                    newQuantities[index].label = e.target.value;
-                    setQuantities(newQuantities);
-                  }}
-                  placeholder="Sipariş Adeti"
-                  className="w-full p-2 border rounded-lg"
+                  onChange={(e) => handleQuantityChange(index, 'label', e.target.value)}
+                  placeholder="Miktar (örn: 1000)"
+                  className="flex-1 p-2 border rounded-lg"
+                />
+                <input
+                  type="number"
+                  value={qty.multiplier}
+                  onChange={(e) => handleQuantityChange(index, 'multiplier', e.target.value)}
+                  placeholder="Çarpan"
+                  className="w-20 p-2 border rounded-lg"
+                  min="1"
+                />
+                <input
+                  type="number"
+                  value={qty.discount}
+                  onChange={(e) => handleQuantityChange(index, 'discount', e.target.value)}
+                  placeholder="İndirim %"
+                  className="w-20 p-2 border rounded-lg"
+                  min="0"
+                  max="100"
                 />
                 <button
                   type="button"
                   onClick={() => removeQuantity(index)}
-                  className="bg-orangeBrand text-white px-4 py-2 rounded-lg"
+                  className="p-2 bg-orangeBrand text-white rounded-lg"
                 >
                   Sil
                 </button>
               </div>
             ))}
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-2">
               <input
                 type="text"
                 value={currentQuantity}
                 onChange={(e) => setCurrentQuantity(e.target.value)}
-                placeholder="Yeni Sipariş Adeti"
-                className="w-full p-2 border rounded-lg"
+                placeholder="Yeni Miktar"
+                className="flex-1 p-2 border rounded-lg"
+              />
+              <input
+                type="number"
+                value={currentDiscount}
+                onChange={(e) => setCurrentDiscount(e.target.value)}
+                placeholder="İndirim %"
+                className="w-20 p-2 border rounded-lg"
+                min="0"
+                max="100"
               />
               <button
                 type="button"
@@ -422,20 +476,21 @@ const EditModal = ({ product, onClose, onUpdate }) => {
               </button>
             </div>
           </div>
+
           {/* Butonlar */}
-          <div className="flex gap-2">
+          <div className="flex justify-end gap-2 mt-4">
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+              className="px-4 py-2 bg-gray-300 rounded-lg"
             >
               İptal
             </button>
             <button
               type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded-lg"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg"
             >
-              Güncelle
+              Kaydet
             </button>
           </div>
         </form>

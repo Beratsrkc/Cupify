@@ -1,10 +1,9 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { FaSearchPlus } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaSearchPlus } from "react-icons/fa";
 import RelatedProducts from "../components/RelatedProducts";
 import ProductFeatures from "../components/ProductFeatures";
 
@@ -26,77 +25,73 @@ const Product = () => {
   const { slug } = useParams();
   const { products, currency, addToCart } = useContext(ShopContext);
   const [productData, setProductData] = useState(null);
-  const [image, setImage] = useState("");
-  const [quantity, setQuantity] = useState(1000);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isAdded, setIsAdded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedPrintingOption, setSelectedPrintingOption] = useState(null);
   const [selectedCoverOption, setSelectedCoverOption] = useState(null);
-  const [coverPrice, setCoverPrice] = useState(0);
-  const [totalPrice, setTotalPrice] = useState(0);
   const [cartQuantity, setCartQuantity] = useState(1);
+  const [selectedQuantity, setSelectedQuantity] = useState(null);
 
+  // Ürün verilerini yükle
   useEffect(() => {
     const product = products.find((item) => generateSlug(item.name) === slug);
     if (product) {
       setProductData(product);
-      setImage(product.images?.[0] || "/assets/default-image.jpg");
-      setSelectedSize(product.sizes?.[0] || { price: 0 }); // Varsayılan değer
-      setSelectedPrintingOption(product.printingOptions?.[0] || "");
+      setSelectedSize(product.sizes?.[0] || null);
+      setSelectedPrintingOption(product.printingOptions?.[0] || null);
       setSelectedCoverOption(product.coverOptions?.colors?.[0] || null);
-      setCoverPrice(product.coverOptions?.price || 0);
-      setQuantity(product.quantities?.[0]?.label || 1000);
-      setTotalPrice(
-        (product.sizes?.[0]?.price || 0) *
-          (product.quantities?.[0]?.multiplier || 1)
-      );
-    } else {
-      setProductData(null);
+      setSelectedQuantity(product.quantities?.[0] || null);
     }
   }, [slug, products]);
 
-  useEffect(() => {
-    if (selectedSize) {
-      let price = selectedSize.price * quantity;
-      if (selectedCoverOption && selectedCoverOption !== "Yok") {
-        price += coverPrice * quantity;
-      }
+  // Seçilen miktara göre indirimli fiyatı hesapla
+  const calculatePrice = useMemo(() => {
+    if (!selectedSize || !selectedQuantity) return 0;
 
-      setTotalPrice(price);
+    let price = selectedSize.price * selectedQuantity.label;
+    // İndirim uygula
+    price = price * (1 - (selectedQuantity.discount || 0) / 100);
+    
+    // Kapak fiyatı ekle (eğer seçilmişse)
+    if (selectedCoverOption && selectedCoverOption !== "Yok" && productData?.coverOptions?.price) {
+      price += productData.coverOptions.price * selectedQuantity.label;
     }
-  }, [selectedSize, quantity, selectedCoverOption, coverPrice]);
 
-  if (!productData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Ürün yükleniyor...
-      </div>
-    );
-  }
+    return price;
+  }, [selectedSize, selectedQuantity, selectedCoverOption, productData]);
+
+  // Toplam fiyatı hesapla (adet × birim fiyat)
+  const totalPrice = useMemo(() => {
+    return calculatePrice * cartQuantity;
+  }, [calculatePrice, cartQuantity]);
 
   const handleAddToCart = () => {
-    if (quantity > 0 && selectedSize && selectedPrintingOption) {
-      const cartItem = {
-        id: productData._id,
-        name: productData.name,
-        selectedQuantity: quantity,
-        quantity: cartQuantity,
-        selectedSize,
-        selectedPrintingOption,
-        selectedCoverOption,
-        totalPrice: totalPrice * cartQuantity,
-        image: productData.images?.[0],
-      };
-
-      addToCart(cartItem);
-      setIsAdded(true);
-      setTimeout(() => setIsAdded(false), 1000);
-    } else {
+    if (!selectedSize || !selectedPrintingOption || !selectedQuantity) {
       alert("Lütfen geçerli bir miktar, ebat ve baskı seçeneği girin!");
+      return;
     }
+
+    const cartItem = {
+      id: productData._id,
+      name: productData.name,
+      selectedQuantity: selectedQuantity.label,
+      quantity: cartQuantity,
+      selectedSize,
+      selectedPrintingOption,
+      selectedCoverOption,
+      discount: selectedQuantity.discount || 0,
+      basePrice: selectedSize.price,
+      totalPrice,
+      image: productData.images?.[0],
+    };
+
+    addToCart(cartItem);
+    setIsAdded(true);
+    setTimeout(() => setIsAdded(false), 1000);
   };
+
   const openModal = (index) => {
     setCurrentImageIndex(index);
     setIsModalOpen(true);
@@ -126,65 +121,93 @@ const Product = () => {
     }).format(price);
   };
 
+  if (!productData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Ürün yükleniyor...
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
-      {/* Product Images and Details */}
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto p-4 pb-20 lg:pb-4">
         <div className="flex flex-col lg:flex-row gap-8 bg-white py-6 rounded-sm">
           {/* Product Images */}
           <div className="flex flex-col-reverse lg:flex-row gap-4 w-full lg:w-1/2">
             <div className="flex lg:flex-col overflow-x-auto lg:overflow-y-scroll gap-3 lg:w-1/5">
               {productData.images?.map((item, index) => (
                 <img
-                  onClick={() => setImage(item)}
+                  onClick={() => setCurrentImageIndex(index)}
                   src={item}
                   key={index}
-                  className="w-24 h-24 lg:w-full lg:h-[103.5px] object-cover cursor-pointer border rounded-sm transition-all"
+                  className={`w-24 h-24 lg:w-full lg:h-[103.5px] object-cover cursor-pointer border rounded-sm transition-all ${
+                    currentImageIndex === index ? "ring-2 ring-orangeBrand" : ""
+                  }`}
                   alt=""
                 />
-              )) || <p>No images available</p>}
+              ))}
             </div>
             <div className="w-full lg:w-4/5 relative">
               <button
                 onClick={() => openModal(currentImageIndex)}
-                className="absolute top-2 right-2 bg-transparent bg-opacity-80 p-2 rounded-sm hover:bg-opacity-100 transition-all"
+                className="absolute top-2 right-2 bg-white bg-opacity-80 p-2 rounded-sm hover:bg-opacity-100 transition-all shadow-md"
               >
-                <FaSearchPlus className="text-gray-700 text-xl " />
+                <FaSearchPlus className="text-gray-700 text-xl" />
               </button>
               <img
                 onClick={() => openModal(currentImageIndex)}
-                className="w-full h-auto sm:max-h-[450px] max-h-80 object-contain cursor-pointer rounded-sm bg-slate-200"
-                src={image || "/assets/default-image.jpg"}
-                alt=""
+                className="w-full h-auto sm:max-h-[450px] max-h-80 object-contain cursor-pointer rounded-sm bg-slate-100"
+                src={productData.images?.[currentImageIndex] || "/assets/default-image.jpg"}
+                alt={productData.name}
               />
             </div>
           </div>
 
           {/* Product Details */}
           <div className="w-full lg:w-1/2">
-            <h1 className="font-semibold text-3xl text-black ">
+            <h1 className="font-semibold text-3xl text-black">
               {productData.name}
             </h1>
 
             {/* Price Section */}
-            <div className="flex items-center gap-4 mt-5">
+            <div className="mt-5 space-y-1">
+              {selectedQuantity?.discount > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500 line-through">
+                    {currency}
+                    {formatPrice(selectedSize?.price * selectedQuantity.label)}
+                  </span>
+                  <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-medium">
+                    %{selectedQuantity.discount} İNDİRİM
+                  </span>
+                </div>
+              )}
               <p className="text-[27px] font-bold text-black">
                 {currency}
-                {formatPrice(totalPrice)} {/* Fiyatı formatla */}
+                {formatPrice(calculatePrice)}
               </p>
+              {selectedCoverOption && selectedCoverOption !== "Yok" && (
+                <p className="text-sm text-gray-600">
+                  Kapaklı Fiyat: {currency}
+                  {formatPrice(calculatePrice)}
+                </p>
+              )}
             </div>
 
-            <div className=" mt-6 space-y-6">
+            <div className="mt-6 space-y-6">
               {/* Size Selection */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                 <p className="font-medium text-black w-32">Ebat Seçimi:</p>
                 <div className="flex flex-wrap gap-2">
-                  {productData.sizes?.map((size, index) => (
+                  {productData.sizes?.map((size) => (
                     <button
-                      key={index}
+                      key={size._id}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 border text-black text-sm rounded-sm hover:bg-gray-100 hover:border-red-600 transition-all${
-                        selectedSize?._id === size._id ? " button-color" : ""
+                      className={`px-4 py-2 border text-sm rounded-sm transition-all ${
+                        selectedSize?._id === size._id
+                          ? "bg-orangeBrand text-white border-orangeBrand"
+                          : "text-black hover:bg-gray-100 hover:border-orangeBrand"
                       }`}
                     >
                       {size.label}
@@ -197,66 +220,69 @@ const Product = () => {
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                 <p className="font-medium text-black w-32">Sipariş Miktarı:</p>
                 <div className="flex flex-wrap gap-2">
-                  {productData.quantities?.map((qty, index) => (
+                  {productData.quantities?.map((qty) => (
                     <button
-                      key={index}
-                      onClick={() => setQuantity(qty.label)}
-                      className={`px-4 py-2 border text-black text-sm rounded-sm hover:bg-gray-100 hover:border-red-600 transition-all ${
-                        quantity === qty.label ? "button-color" : ""
+                      key={qty._id}
+                      onClick={() => setSelectedQuantity(qty)}
+                      className={`px-4 py-2 border text-sm rounded-sm transition-all ${
+                        selectedQuantity?._id === qty._id
+                          ? "bg-orangeBrand text-white border-orangeBrand"
+                          : "text-black hover:bg-gray-100 hover:border-orangeBrand"
                       }`}
+                      title={qty.discount > 0 ? `%${qty.discount} indirim` : ""}
                     >
-                      {qty.label} Adet
+                      {qty.label} Adet{qty.discount > 0 && ` (%${qty.discount})`}
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Printing Options Selection */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                <p className="font-medium text-black w-32">Baskı Seçeneği:</p>
-                <div className="flex flex-wrap gap-2">
-                  {productData.printingOptions?.map((option, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedPrintingOption(option)}
-                      className={`px-4 py-2 border  text-black text-sm rounded-sm hover:bg-gray-100 hover:border-red-600 transition-all ${
-                        selectedPrintingOption === option ? "button-color" : ""
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
+              {productData.printingOptions?.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                  <p className="font-medium text-black w-32">Baskı Seçeneği:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {productData.printingOptions?.map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => setSelectedPrintingOption(option)}
+                        className={`px-4 py-2 border text-sm rounded-sm transition-all ${
+                          selectedPrintingOption === option
+                            ? "bg-orangeBrand text-white border-orangeBrand"
+                            : "text-black hover:bg-gray-100 hover:border-orangeBrand"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Cover Options Selection */}
               {productData.coverOptions?.colors?.length > 0 && (
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                   <p className="font-medium text-black w-32">Kapak Seçeneği:</p>
                   <div className="flex flex-wrap gap-2">
-                    {productData.coverOptions.colors.map((color, index) => (
+                    {productData.coverOptions.colors.map((color) => (
                       <button
-                        key={index}
-                        onClick={() => {
-                          setSelectedCoverOption(color);
-                          setCoverPrice(productData.coverOptions.price);
-                        }}
-                        className={`px-4 py-2 border  text-black text-sm rounded-sm hover:bg-gray-100 hover:border-red-600 transition-all ${
-                          selectedCoverOption === color ? "button-color" : ""
+                        key={color}
+                        onClick={() => setSelectedCoverOption(color)}
+                        className={`px-4 py-2 border text-sm rounded-sm transition-all ${
+                          selectedCoverOption === color
+                            ? "bg-orangeBrand text-white border-orangeBrand"
+                            : "text-black hover:bg-gray-100 hover:border-orangeBrand"
                         }`}
                       >
                         {color}
                       </button>
                     ))}
                     <button
-                      onClick={() => {
-                        setSelectedCoverOption("Yok");
-                        setCoverPrice(0);
-                      }}
-                      className={`px-4 py-2 border  text-black text-sm rounded-sm hover:bg-gray-200 hover:border-red-600 transition-all ${
+                      onClick={() => setSelectedCoverOption("Yok")}
+                      className={`px-4 py-2 border text-sm rounded-sm transition-all ${
                         selectedCoverOption === "Yok"
-                          ? "bg-gray-100 border-red-600 text-black"
-                          : ""
+                          ? "bg-orangeBrand text-white border-orangeBrand"
+                          : "text-black hover:bg-gray-100 hover:border-orangeBrand"
                       }`}
                     >
                       Yok
@@ -272,19 +298,26 @@ const Product = () => {
                 type="number"
                 min="1"
                 value={cartQuantity}
-                onChange={(e) => setCartQuantity(Number(e.target.value))}
-                className="border border-gray-500 px-3 py-2 w-24 text-center outline-none rounded-sm"
+                onChange={(e) => {
+                  const value = Math.max(1, Number(e.target.value));
+                  setCartQuantity(value);
+                }}
+                className="border border-gray-300 px-3 py-2 w-24 text-center outline-none rounded-sm focus:border-orangeBrand"
               />
               <button
                 onClick={handleAddToCart}
-                className={`px-8 py-3 text-sm transition-all duration-500 ${
+                disabled={isAdded}
+                className={`px-8 py-3 text-sm transition-all duration-300 ${
                   isAdded
-                    ? "bg-green-600 text-white animate-slideUp"
+                    ? "bg-green-600 text-white"
                     : "bg-orangeBrand text-white hover:bg-orangeBrandDark"
-                } rounded-sm`}
+                } rounded-sm flex items-center justify-center min-w-[150px]`}
               >
                 {isAdded ? (
-                  <IoMdCheckmarkCircleOutline className="w-[77px] h-5" />
+                  <>
+                    <IoMdCheckmarkCircleOutline className="mr-2" />
+                    EKLENDİ
+                  </>
                 ) : (
                   "SEPETE EKLE"
                 )}
@@ -294,53 +327,49 @@ const Product = () => {
         </div>
 
         {/* Fixed Bottom Bar for Mobile */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50 shadow-lg">
           <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <input
-                type="number"
-                min="1"
-                value={cartQuantity}
-                onChange={(e) => setCartQuantity(Number(e.target.value))}
-                className="border border-gray-500 px-3 py-2 w-24 text-center outline-none rounded-sm"
-              />
-            </div>
+            <input
+              type="number"
+              min="1"
+              value={cartQuantity}
+              onChange={(e) => {
+                const value = Math.max(1, Number(e.target.value));
+                setCartQuantity(value);
+              }}
+              className="border border-gray-300 px-3 py-2 w-20 text-center outline-none rounded-sm focus:border-orangeBrand"
+            />
             <button
               onClick={handleAddToCart}
-              className={`px-8 py-3 text-sm transition-all duration-500 ${
+              disabled={isAdded}
+              className={`px-4 py-3 text-sm flex-1 transition-all ${
                 isAdded
-                  ? "bg-green-600 text-white animate-slideUp"
+                  ? "bg-green-600 text-white"
                   : "bg-orangeBrand text-white hover:bg-orangeBrandDark"
               } rounded-sm`}
             >
-              {isAdded ? (
-                <IoMdCheckmarkCircleOutline className="w-[77px] h-5" />
-              ) : (
-                "SEPETE EKLE"
-              )}
+              {isAdded ? "EKLENDİ" : `SEPETE EKLE (${currency}${formatPrice(totalPrice)})`}
             </button>
           </div>
         </div>
 
         {/* Product Description */}
-        <div className="mt-10 bg-white rounded-sm">
-          <div className="flex">
-            <b className="border px-5 py-4 text-sm bg-gray-100 text-black rounded-t-xs">
-              Açıklama
-            </b>
+        <div className="mt-10 bg-white rounded-sm border">
+          <div className="border-b px-5 py-4 bg-gray-50">
+            <h2 className="font-semibold text-black">Açıklama</h2>
           </div>
-          <div className="flex flex-col gap-4 border px-4 py-6 text-sm text-black rounded-b-xs">
+          <div className="px-5 py-6 text-gray-700">
             <p>{productData.description}</p>
           </div>
         </div>
 
         {/* Full-Screen Image Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
-            <div className="relative bg-white max-w-4xl w-full max-h-[90vh] overflow-hidden rounded-sm">
+          <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center p-4">
+            <div className="relative w-full max-w-6xl max-h-[90vh]">
               <button
                 onClick={closeModal}
-                className="absolute top-4 right-4 text-gray-700 text-3xl z-50"
+                className="absolute top-4 right-4 text-white text-3xl z-50 hover:text-orangeBrand transition-colors"
               >
                 <IoClose />
               </button>
@@ -348,31 +377,35 @@ const Product = () => {
                 {productData.images.length > 1 && (
                   <button
                     onClick={handlePrevImage}
-                    className="absolute left-0 sm:left-4 text-gray-700 text-2xl bg-transparent p-2 hover:bg-opacity-100 transition-all z-50"
+                    className="absolute left-4 text-white text-2xl z-50 hover:text-orangeBrand transition-colors"
                   >
-                    <FaChevronLeft />
+                    <FaChevronLeft size={28} />
                   </button>
                 )}
                 <img
                   src={productData.images[currentImageIndex]}
                   className="max-w-full max-h-[80vh] object-contain"
-                  alt=""
+                  alt={productData.name}
                 />
                 {productData.images.length > 1 && (
                   <button
                     onClick={handleNextImage}
-                    className="absolute right-0 sm:right-4 text-gray-700 text-2xl bg-transparent p-2 hover:bg-opacity-100 transition-all z-50"
+                    className="absolute right-4 text-white text-2xl z-50 hover:text-orangeBrand transition-colors"
                   >
-                    <FaChevronRight />
+                    <FaChevronRight size={28} />
                   </button>
                 )}
+              </div>
+              <div className="text-center mt-4 text-white">
+                {currentImageIndex + 1} / {productData.images.length}
               </div>
             </div>
           </div>
         )}
       </div>
+
       <ProductFeatures />
-        <RelatedProducts currentProduct={productData} products={products} />
+      <RelatedProducts currentProduct={productData} products={products} />
     </div>
   );
 };

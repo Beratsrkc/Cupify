@@ -12,7 +12,7 @@ const addProduct = async (req, res) => {
       sizes, 
       quantities,
       printingOptions,
-      coverOptions // Kapak seçeneği
+      coverOptions
     } = req.body;
 
     // Gerekli alan kontrolleri
@@ -49,19 +49,25 @@ const addProduct = async (req, res) => {
       })
     );
 
+    // Quantities dizisini işle (indirim alanını ekle)
+    const processedQuantities = JSON.parse(quantities || '[]').map(q => ({
+      label: q.label,
+      multiplier: q.multiplier || 1,
+      discount: Math.min(100, Math.max(0, q.discount || 0)) // 0-100 arasında sınırla
+    }));
+
     // Veri modelini oluşturma
     const productData = {
       name,
       description,
       category,
       subCategory,
-      bestseller: bestseller === 'true' || bestseller === true, // Doğru şekilde kontrol et
+      bestseller: bestseller === 'true' || bestseller === true,
       images: imagesUrl,
-      date: Date.now(),
       sizes: JSON.parse(sizes || '[]'),
-      quantities: JSON.parse(quantities || '[]'),
+      quantities: processedQuantities,
       printingOptions: JSON.parse(printingOptions || '[]'),
-      coverOptions: JSON.parse(coverOptions || { price: 0, colors: [] }) // Kapak seçeneği
+      coverOptions: JSON.parse(coverOptions || '{"price": 0, "colors": []}')
     };
 
     // Veritabanına kaydetme
@@ -71,7 +77,8 @@ const addProduct = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Ürün başarıyla eklendi',
-      productId: product._id
+      productId: product._id,
+      product: product
     });
 
   } catch (error) {
@@ -116,21 +123,27 @@ const updateProduct = async (req, res) => {
       category,
       subCategory,
       bestseller: bestseller === 'true' || bestseller === true,
-      coverOptions: {
-        price: coverOptions?.price || 0,
-        colors: coverOptions?.colors || []
-      },
-      sizes: sizes || [],
-      quantities: quantities || [],
-      printingOptions: printingOptions || []
+      coverOptions: typeof coverOptions === 'string' ? JSON.parse(coverOptions) : coverOptions || { price: 0, colors: [] },
+      sizes: typeof sizes === 'string' ? JSON.parse(sizes) : sizes || [],
+      quantities: typeof quantities === 'string' ? JSON.parse(quantities) : quantities || [],
+      printingOptions: typeof printingOptions === 'string' ? JSON.parse(printingOptions) : printingOptions || []
     };
+
+    // Quantities dizisindeki indirimleri kontrol et
+    if (Array.isArray(updateData.quantities)) {
+      updateData.quantities = updateData.quantities.map(q => ({
+        label: q.label,
+        multiplier: q.multiplier || 1,
+        discount: Math.min(100, Math.max(0, q.discount || 0)) // 0-100 arasında sınırla
+      }));
+    }
 
     // Veritabanında güncelleme işlemi
     const updatedProduct = await ProductModel.findByIdAndUpdate(
       productId,
       updateData,
-      { new: true } // Güncellenmiş veriyi döndür
-    );
+      { new: true }
+    ).populate('category', 'name');
 
     if (!updatedProduct) {
       return res.status(404).json({
@@ -153,37 +166,105 @@ const updateProduct = async (req, res) => {
     });
   }
 };
+
 const listProduct = async (req, res) => {
   try {
     // Tüm ürünleri getir ve kategori bilgilerini populate et
-    const products = await ProductModel.find({}).populate('category', 'name');
+    const products = await ProductModel.find({})
+      .populate('category', 'name')
+      .sort({ createdAt: -1 }); // Yeniden eskiye sırala
 
-    res.json({ success: true, products });
+    res.status(200).json({ 
+      success: true, 
+      count: products.length,
+      products 
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Ürün listeleme hatası:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 
 const removeProduct = async (req, res) => {
   try {
-    await ProductModel.findByIdAndDelete(req.body.id);
-    res.json({ success: true, message: 'Product Removed' });
+    const { id } = req.body;
+    
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ürün IDsi gereklidir'
+      });
+    }
+
+    // Cloudinary'deki resimleri de silmek için önce ürünü bul
+    const product = await ProductModel.findById(id);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Ürün bulunamadı'
+      });
+    }
+
+    // Ürünü sil
+    await ProductModel.findByIdAndDelete(id);
+
+    // Cloudinary'deki resimleri sil (opsiyonel)
+    // ...
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Ürün başarıyla silindi' 
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Ürün silme hatası:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 
 const singleProduct = async (req, res) => {
   try {
     const { productId } = req.body;
-    const product = await ProductModel.findById(productId);
-    res.json({ success: true, product });
+    
+    if (!productId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ürün IDsi gereklidir'
+      });
+    }
+
+    const product = await ProductModel.findById(productId)
+      .populate('category', 'name');
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Ürün bulunamadı'
+      });
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      product 
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Ürün detay hatası:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 
-export { addProduct, listProduct, removeProduct, singleProduct,updateProduct };
+export { 
+  addProduct, 
+  listProduct, 
+  removeProduct, 
+  singleProduct,
+  updateProduct 
+};

@@ -175,10 +175,6 @@ const Navbar = () => {
                             {product.description.length > 50 ? "..." : ""}
                           </p>
                         </div>
-                        <div className="text-sm font-semibold text-orange-500">
-                          {product.price.toFixed(2)}
-                          {currency}
-                        </div>
                       </div>
                     ))}
                   </div>
@@ -373,10 +369,6 @@ const Navbar = () => {
                       {product.description.substring(0, 50)}
                       {product.description.length > 50 ? "..." : ""}
                     </p>
-                  </div>
-                  <div className="text-sm font-semibold text-orange-500">
-                    {product.price.toFixed(2)}
-                    {currency}
                   </div>
                 </div>
               ))}

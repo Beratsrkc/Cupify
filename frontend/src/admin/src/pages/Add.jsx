@@ -22,7 +22,8 @@ const Add = ({ token }) => {
 
   const [sizes, setSizes] = useState([]); // Ebatlar için
   const [quantities, setQuantities] = useState([]); // Sipariş miktarları için
-  const [currentQuantity, setCurrentQuantity] = useState(''); // Geçerli sipariş miktarı
+const [currentQuantity, setCurrentQuantity] = useState('');
+const [currentDiscount, setCurrentDiscount] = useState(0); // Yeni eklenen indirim state'i
   const [printingOptions, setPrintingOptions] = useState([]); // Baskı seçenekleri için
   const [currentPrintingOption, setCurrentPrintingOption] = useState(''); // Geçerli baskı seçeneği
 
@@ -119,14 +120,22 @@ const Add = ({ token }) => {
   };
 
   // Sipariş miktarı ekle
-  const addQuantity = () => {
-    if (currentQuantity) {
-      setQuantities([...quantities, { label: currentQuantity, multiplier: 1 }]);
-      setCurrentQuantity(''); // Inputu temizle
-    } else {
-      toast.error('Lütfen geçerli bir miktar girin!');
-    }
-  };
+const addQuantity = () => {
+  if (currentQuantity) {
+    setQuantities([
+      ...quantities, 
+      { 
+        label: currentQuantity, 
+        multiplier: 1,
+        discount: Number(currentDiscount) || 0 // İndirim değerini ekleyin
+      }
+    ]);
+    setCurrentQuantity('');
+    setCurrentDiscount(0); // Inputu sıfırla
+  } else {
+    toast.error('Lütfen geçerli bir miktar girin!');
+  }
+};
 
   // Sipariş miktarı sil
   const removeQuantity = (index) => {
@@ -406,38 +415,54 @@ const Add = ({ token }) => {
         </div>
 
         {/* Sipariş Miktarları */}
-        <div>
-          <p className="mb-2">Sipariş Miktarları</p>
-          <div className="flex items-center gap-2 mb-2">
-            <input
-              type="number"
-              value={currentQuantity}
-              onChange={(e) => setCurrentQuantity(e.target.value)}
-              placeholder="Sipariş Miktarı"
-              className="w-full max-w-[200px] px-3 py-2 border rounded"
-            />
-            <span>Adet</span>
-            <button
-              type="button"
-              onClick={addQuantity}
-              className="bg-green-500 text-white px-3 py-1 rounded"
-            >
-              Ekle
-            </button>
-          </div>
-          {quantities.map((qty, index) => (
-            <div key={index} className="flex items-center gap-2 mb-2">
-              <span>{qty.label} Adet</span>
-              <button
-                type="button"
-                onClick={() => removeQuantity(index)}
-                className="bg-orangeBrand text-white px-3 py-1 rounded"
-              >
-                Sil
-              </button>
-            </div>
-          ))}
-        </div>
+<div>
+  <p className="mb-2">Sipariş Miktarları (Adet ve İndirim)</p>
+  <div className="flex flex-col sm:flex-row gap-2 mb-2">
+    <div className="flex items-center gap-2">
+      <input
+        type="number"
+        value={currentQuantity}
+        onChange={(e) => setCurrentQuantity(e.target.value)}
+        placeholder="Sipariş Miktarı"
+        className="w-full max-w-[150px] px-3 py-2 border rounded"
+        min="1"
+      />
+      <span>Adet</span>
+    </div>
+    <div className="flex items-center gap-2">
+      <input
+        type="number"
+        value={currentDiscount}
+        onChange={(e) => setCurrentDiscount(e.target.value)}
+        placeholder="İndirim %"
+        className="w-full max-w-[100px] px-3 py-2 border rounded"
+        min="0"
+        max="100"
+      />
+      <span>% İndirim</span>
+    </div>
+    <button
+      type="button"
+      onClick={addQuantity}
+      className="bg-green-500 text-white px-3 py-2 rounded"
+    >
+      Ekle
+    </button>
+  </div>
+  
+  {quantities.map((qty, index) => (
+    <div key={index} className="flex items-center gap-2 mb-2">
+      <span>{qty.label} Adet - {qty.discount}% İndirim</span>
+      <button
+        type="button"
+        onClick={() => removeQuantity(index)}
+        className="bg-orangeBrand text-white px-3 py-1 rounded"
+      >
+        Sil
+      </button>
+    </div>
+  ))}
+</div>
 
         {/* Baskı Seçenekleri */}
         <div>
