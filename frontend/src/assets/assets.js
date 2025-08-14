@@ -21,6 +21,7 @@ import DondurmaKasesi from "./DondurmaKasesi.png";
 import DönerBox from "./DönerBox.png";
 import KartonBarfak from "./KartonBarfak.png";
 import SalataKasesi from "./SalataKasesi.png";
+import Kartonbardak3 from "./Kartonbardak3.jpg";
 import bg0 from "./bg-0.png";  
 import bg1 from "./bg-1.png";
 import bg2 from "./bg-2.png";
@@ -47,6 +48,7 @@ export const assets = {
   bg6,
   bg7,
   tekparca2,
+  Kartonbardak3,
   tekparcaLogolar,
   CafeRestaurant,
   KartonKutular,
