@@ -32,6 +32,12 @@ a.active hr {
         color: white;
     }
 }
+@media (prefers-color-scheme: dark) {
+  html, body {
+    background-color: #fff !important;
+    color: #000 !important;
+  }
+}
 
 .phone-input::-webkit-outer-spin-button,
 .phone-input::-webkit-inner-spin-button {
