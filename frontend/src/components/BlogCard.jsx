@@ -24,7 +24,7 @@ const BlogCard = ({ blog }) => {
   const slug = createSlug(blog.title);
 
   return (
-    <div className="bg-white rounded-lg border shadow-lg overflow-hidden hover:shadow-lg transition-shadow duration-300 h-[400px] flex flex-col">
+    <div className="bg-white rounded-md border overflow-hidden  duration-300 h-[400px] flex flex-col">
       {/* Resim Alanı (Sabit Boyut) */}
       <Link to={`/blog/${slug}`} className="block relative h-48 overflow-hidden">
         <img

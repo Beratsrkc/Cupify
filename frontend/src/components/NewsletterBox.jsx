@@ -17,7 +17,7 @@ const NewsletterBox = () => {
     };
 
     return (
-        <div className="relative w-full py-10 overflow-hidden">
+        <div className="relative w-full py-14 overflow-hidden">
             <div className="mx-auto w-full px-4 lg:px-8">
                 <div className="flex flex-col items-center lg:flex-row lg:justify-center lg:items-start">
                     {/* Resim Bölümü (Sağ Taraf) */}

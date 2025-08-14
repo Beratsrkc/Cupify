@@ -15,19 +15,13 @@ import mastercard from "./Mastercard-logo.webp";
 import contact_img from "./contact_img.png";
 import cross_icon from "./cross_icon.png";
 import Cupify_logo_buyuk from "./logo-color.png";
+import Cupify_logo_yuvarlak from "./CupifyLogo.png";
 import cupifybackground from "./cupify-background.png";
-import PetBardaklar from "./PetBardak.png";
-import DondurmaKasesi from "./DondurmaKasesi.png";
-import DönerBox from "./DönerBox.png";
-import KartonBarfak from "./KartonBarfak.png";
-import SalataKasesi from "./SalataKasesi.png";
 import Kartonbardak3 from "./Kartonbardak3.jpg";
 import bg0 from "./bg-0.png";  
 import bg1 from "./bg-1.png";
 import bg2 from "./bg-2.png";
-import bg3 from "./bg-3.png";
 import bg4 from "./bg-4.png";
-import bg5 from "./bg-5.png";
 import bg6 from "./bg-6.png";
 import bg7 from "./bg-7.png";
 import CafeRestaurant from "./CafeRestaurant.png";
@@ -42,9 +36,7 @@ export const assets = {
   bg0,
   bg1,
   bg2,
-  bg3,
   bg4,
-  bg5,
   bg6,
   bg7,
   tekparca2,
@@ -55,14 +47,10 @@ export const assets = {
   Kaseler,
   Bardaklar,
   KartonÇantlar,
-  PetBardaklar,
-  DondurmaKasesi,
-  KartonBarfak,
-  SalataKasesi,
-  DönerBox,
   Cupify_logo_buyuk,
   cupifybackground,
   Cupify_logo,
+  Cupify_logo_yuvarlak,
   cart_icon,
   dropdown_icon,
   exchange_icon,
