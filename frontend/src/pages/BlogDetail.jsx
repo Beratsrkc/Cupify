@@ -69,7 +69,7 @@ const BlogDetail = () => {
       transition={{ duration: 0.5 }}
       className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8"
     >
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-[1200px] mx-auto">
         {/* Geri Dön Butonu */}
         <div className="mb-8">
           <button

@@ -35,13 +35,19 @@ const EditModal = ({ product, onClose, onUpdate }) => {
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
 
-  // Kategorileri çek
-  useEffect(() => {
+   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(`${backendUrl}/api/category/list`);
         if (response.data.success) {
           setCategories(response.data.categories);
+          
+          // Eğer product.category bir ObjectId ise, doğrudan set et
+          if (product.category && typeof product.category === 'object') {
+            setCategory(product.category._id);
+          } else if (product.category) {
+            setCategory(product.category);
+          }
         } else {
           toast.error(response.data.message);
         }
@@ -50,17 +56,26 @@ const EditModal = ({ product, onClose, onUpdate }) => {
       }
     };
     fetchCategories();
-  }, []);
+  }, [product.category]);
 
-  // Kategori seçildiğinde alt kategorileri çek
+  // Kategori seçildiğinde alt kategorileri çek ve mevcut alt kategoriyi set et
   useEffect(() => {
     if (category) {
       const selectedCategory = categories.find((cat) => cat._id === category);
       if (selectedCategory) {
         setSubCategories(selectedCategory.subCategories || []);
+        
+        // Eğer mevcut alt kategori, seçilen kategorinin alt kategorilerinde varsa koru
+        if (selectedCategory.subCategories.includes(subCategory)) {
+          // Alt kategori zaten set edilmiş, bir şey yapma
+        } else {
+          // Yoksa ilk alt kategoriyi seç veya boş bırak
+          setSubCategory(selectedCategory.subCategories[0] || '');
+        }
       }
     } else {
       setSubCategories([]);
+      setSubCategory('');
     }
   }, [category, categories]);
 
@@ -202,41 +217,41 @@ const EditModal = ({ product, onClose, onUpdate }) => {
           </div>
 
           {/* Kategori ve Alt Kategori */}
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <p className="mb-2">Kategori</p>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full p-2 border rounded-lg"
-                required
-              >
-                <option value="">Kategori Seçin</option>
-                {categories.map((cat) => (
-                  <option key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex-1">
-              <p className="mb-2">Alt Kategori</p>
-              <select
-                value={subCategory}
-                onChange={(e) => setSubCategory(e.target.value)}
-                className="w-full p-2 border rounded-lg"
-                required
-              >
-                <option value="">Alt Kategori Seçin</option>
-                {subCategories.map((sub, index) => (
-                  <option key={index} value={sub}>
-                    {sub}
-                  </option>
-                ))}
-              </select>
-            </div>
+           <div className="flex gap-4">
+          <div className="flex-1">
+            <p className="mb-2">Kategori</p>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full p-2 border rounded-lg"
+              required
+            >
+              <option value="">Kategori Seçin</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
           </div>
+
+          <div className="flex-1">
+            <p className="mb-2">Alt Kategori</p>
+            <select
+              value={subCategory}
+              onChange={(e) => setSubCategory(e.target.value)}
+              className="w-full p-2 border rounded-lg"
+              required
+            >
+              <option value="">Alt Kategori Seçin</option>
+              {subCategories.map((sub, index) => (
+                <option key={index} value={sub}>
+                  {sub}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
           <label className="flex items-center gap-2">
             <input

@@ -33,16 +33,23 @@ const Product = () => {
   const [selectedCoverOption, setSelectedCoverOption] = useState(null);
   const [cartQuantity, setCartQuantity] = useState(1);
   const [selectedQuantity, setSelectedQuantity] = useState(null);
-
+  const [loading, setLoading] = useState(true);
   // Ürün verilerini yükle
   useEffect(() => {
-    const product = products.find((item) => generateSlug(item.name) === slug);
-    if (product) {
-      setProductData(product);
-      setSelectedSize(product.sizes?.[0] || null);
-      setSelectedPrintingOption(product.printingOptions?.[0] || null);
-      setSelectedCoverOption(product.coverOptions?.colors?.[0] || null);
-      setSelectedQuantity(product.quantities?.[0] || null);
+    if (products && products.length > 0) {
+      const product = products.find((item) => {
+        const itemSlug = generateSlug(item.name);
+        return itemSlug === slug;
+      });
+
+      if (product) {
+        setProductData(product);
+        setSelectedSize(product.sizes?.[0] || null);
+        setSelectedPrintingOption(product.printingOptions?.[0] || null);
+        setSelectedCoverOption(product.coverOptions?.colors?.[0] || null);
+        setSelectedQuantity(product.quantities?.[0] || null);
+      }
+      setLoading(false);
     }
   }, [slug, products]);
 
@@ -53,9 +60,13 @@ const Product = () => {
     let price = selectedSize.price * selectedQuantity.label;
     // İndirim uygula
     price = price * (1 - (selectedQuantity.discount || 0) / 100);
-    
+
     // Kapak fiyatı ekle (eğer seçilmişse)
-    if (selectedCoverOption && selectedCoverOption !== "Yok" && productData?.coverOptions?.price) {
+    if (
+      selectedCoverOption &&
+      selectedCoverOption !== "Yok" &&
+      productData?.coverOptions?.price
+    ) {
       price += productData.coverOptions.price * selectedQuantity.label;
     }
 
@@ -121,10 +132,21 @@ const Product = () => {
     }).format(price);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orangeBrand"></div>
+      </div>
+    );
+  }
+
   if (!productData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        Ürün yükleniyor...
+        <div className="text-center">
+          <h2 className="text-xl font-semibold">Ürün bulunamadı</h2>
+          <p className="text-gray-600 mt-2">Lütfen geçerli bir ürün seçiniz</p>
+        </div>
       </div>
     );
   }
@@ -158,7 +180,10 @@ const Product = () => {
               <img
                 onClick={() => openModal(currentImageIndex)}
                 className="w-full h-auto sm:max-h-[450px] max-h-80 object-contain cursor-pointer rounded-sm bg-slate-100"
-                src={productData.images?.[currentImageIndex] || "/assets/default-image.jpg"}
+                src={
+                  productData.images?.[currentImageIndex] ||
+                  "/assets/default-image.jpg"
+                }
                 alt={productData.name}
               />
             </div>
@@ -231,7 +256,8 @@ const Product = () => {
                       }`}
                       title={qty.discount > 0 ? `%${qty.discount} indirim` : ""}
                     >
-                      {qty.label} Adet{qty.discount > 0 && ` (%${qty.discount})`}
+                      {qty.label} Adet
+                      {qty.discount > 0 && ` (%${qty.discount})`}
                     </button>
                   ))}
                 </div>
@@ -348,7 +374,9 @@ const Product = () => {
                   : "bg-orangeBrand text-white hover:bg-orangeBrandDark"
               } rounded-sm`}
             >
-              {isAdded ? "EKLENDİ" : `SEPETE EKLE (${currency}${formatPrice(totalPrice)})`}
+              {isAdded
+                ? "EKLENDİ"
+                : `SEPETE EKLE (${currency}${formatPrice(totalPrice)})`}
             </button>
           </div>
         </div>

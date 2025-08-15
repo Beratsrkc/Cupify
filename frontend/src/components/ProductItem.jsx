@@ -93,7 +93,7 @@ const ProductItem = React.memo(({
     return sizes.map((size) => size.label).join(", ");
   };
 
-  const productSlug = `${generateSlug(name)}-${id}`;
+  const productSlug = `${generateSlug(name)}`;
 
   const handleImageLoad = () => {
     setImageLoaded(true);
@@ -127,15 +127,11 @@ const ProductItem = React.memo(({
     >
       <div className="flex flex-col relative h-full">
         {/* İndirim etiketi */}
-        {bestDiscount > 0 && (
-          <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded z-20">
-            %{bestDiscount} İNDİRİM
-          </div>
-        )}
+        
 
         {/* Bestseller etiketi */}
         {bestsellerBadge && (
-          <div className="absolute top-2 left-2 bg-orangeBrand text-white text-xs px-2 py-1 rounded z-20">
+          <div className="absolute top-2 left-2 bg-orangeBrand text-white text-xs px-2 py-1 rounded z-50">
             Çok Satan
           </div>
         )}
