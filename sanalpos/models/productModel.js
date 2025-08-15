@@ -77,11 +77,20 @@ const productSchema = new mongoose.Schema(
         },
       },
     ],
-    printingOptions: {
-      // Baskı seçenekleri
-      type: [String],
-      default: [],
-    },
+    printingOptions: [
+      {
+        label: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+      },
+    ],
     coverOptions: {
       price: {
         type: Number,
@@ -91,6 +100,10 @@ const productSchema = new mongoose.Schema(
         type: [String],
         default: [],
       },
+    },
+    inStock: {
+      type: Boolean,
+      default: true,
     },
   },
   {

@@ -45,9 +45,9 @@ const CategorySlider = () => {
   ];
 
   // Kategoriye tıklandığında ilgili kategori sayfasına yönlendir
-  const handleCategoryClick = (categoryId, subCategory) => {
-    navigate(`/urunler?category=${categoryId}&subCategory=${subCategory}`);
-  };
+  const handleCategoryClick = (categoryId) => {
+  navigate(`/urunler?category=${categoryId}`);
+};
 
   return (
     <div className="my-10 ">

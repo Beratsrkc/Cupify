@@ -1,81 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
 import { backendUrl } from "../config";
 
 const EditModal = ({ product, onClose, onUpdate }) => {
   // Temel bilgiler
   const [name, setName] = useState(product.name);
   const [description, setDescription] = useState(product.description);
-  const [category, setCategory] = useState(product.category);
-  const [subCategory, setSubCategory] = useState(product.subCategory);
+  const [category, setCategory] = useState(product.category?._id || "");
+  const [subCategory, setSubCategory] = useState(product.subCategory || "");
   const [bestseller, setBestseller] = useState(product.bestseller);
-
+  const [inStock, setInStock] = useState(product.inStock);
   // Kapak seçenekleri
-  const [includeCover, setIncludeCover] = useState(product.coverOptions?.price > 0);
-  const [coverPrice, setCoverPrice] = useState(product.coverOptions?.price || 0);
-  const [coverColors, setCoverColors] = useState(product.coverOptions?.colors || []);
-  const [currentCoverColor, setCurrentCoverColor] = useState('');
+  const [includeCover, setIncludeCover] = useState(
+    product.coverOptions?.price > 0
+  );
+  const [coverPrice, setCoverPrice] = useState(
+    product.coverOptions?.price || 0
+  );
+  const [coverColors, setCoverColors] = useState(
+    product.coverOptions?.colors || []
+  );
+  const [currentCoverColor, setCurrentCoverColor] = useState("");
 
   // Ebatlar
   const [sizes, setSizes] = useState(product.sizes || []);
-  const [newSizeLabel, setNewSizeLabel] = useState('');
+  const [newSizeLabel, setNewSizeLabel] = useState("");
   const [newSizePrice, setNewSizePrice] = useState(0);
 
   // Sipariş adetleri ve indirimler
   const [quantities, setQuantities] = useState(product.quantities || []);
-  const [currentQuantity, setCurrentQuantity] = useState('');
+  const [currentQuantity, setCurrentQuantity] = useState("");
   const [currentDiscount, setCurrentDiscount] = useState(0);
 
   // Baskı seçenekleri
-  const [printingOptions, setPrintingOptions] = useState(product.printingOptions || []);
-  const [currentPrintingOption, setCurrentPrintingOption] = useState('');
-
+  const [printingOptions, setPrintingOptions] = useState(
+    product.printingOptions || []
+  );
+  const [newPrintingLabel, setNewPrintingLabel] = useState("");
+  const [newPrintingOptions, setNewPrintingOptions] = useState(0);
   // Kategoriler ve alt kategoriler
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
 
-   useEffect(() => {
+  // Kategorileri çek
+  useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(`${backendUrl}/api/category/list`);
         if (response.data.success) {
           setCategories(response.data.categories);
-          
-          // Eğer product.category bir ObjectId ise, doğrudan set et
-          if (product.category && typeof product.category === 'object') {
-            setCategory(product.category._id);
-          } else if (product.category) {
-            setCategory(product.category);
-          }
         } else {
           toast.error(response.data.message);
         }
       } catch (error) {
-        toast.error('Kategoriler yüklenemedi');
+        toast.error("Kategoriler yüklenemedi");
       }
     };
     fetchCategories();
-  }, [product.category]);
+  }, []);
 
-  // Kategori seçildiğinde alt kategorileri çek ve mevcut alt kategoriyi set et
+  // Kategori seçildiğinde alt kategorileri çek
   useEffect(() => {
     if (category) {
       const selectedCategory = categories.find((cat) => cat._id === category);
       if (selectedCategory) {
         setSubCategories(selectedCategory.subCategories || []);
-        
-        // Eğer mevcut alt kategori, seçilen kategorinin alt kategorilerinde varsa koru
-        if (selectedCategory.subCategories.includes(subCategory)) {
-          // Alt kategori zaten set edilmiş, bir şey yapma
-        } else {
-          // Yoksa ilk alt kategoriyi seç veya boş bırak
-          setSubCategory(selectedCategory.subCategories[0] || '');
-        }
       }
     } else {
       setSubCategories([]);
-      setSubCategory('');
     }
   }, [category, categories]);
 
@@ -83,7 +76,7 @@ const EditModal = ({ product, onClose, onUpdate }) => {
   const addCoverColor = () => {
     if (currentCoverColor) {
       setCoverColors([...coverColors, currentCoverColor]);
-      setCurrentCoverColor('');
+      setCurrentCoverColor("");
     }
   };
 
@@ -97,7 +90,7 @@ const EditModal = ({ product, onClose, onUpdate }) => {
   const addSize = () => {
     if (newSizeLabel && newSizePrice >= 0) {
       setSizes([...sizes, { label: newSizeLabel, price: newSizePrice }]);
-      setNewSizeLabel('');
+      setNewSizeLabel("");
       setNewSizePrice(0);
     }
   };
@@ -112,14 +105,14 @@ const EditModal = ({ product, onClose, onUpdate }) => {
   const addQuantity = () => {
     if (currentQuantity) {
       setQuantities([
-        ...quantities, 
-        { 
-          label: currentQuantity, 
+        ...quantities,
+        {
+          label: currentQuantity,
           multiplier: 1,
-          discount: Number(currentDiscount) || 0
-        }
+          discount: Number(currentDiscount) || 0,
+        },
       ]);
-      setCurrentQuantity('');
+      setCurrentQuantity("");
       setCurrentDiscount(0);
     }
   };
@@ -133,15 +126,19 @@ const EditModal = ({ product, onClose, onUpdate }) => {
   // Miktar değişikliği
   const handleQuantityChange = (index, field, value) => {
     const newQuantities = [...quantities];
-    newQuantities[index][field] = field === 'discount' ? Number(value) : value;
+    newQuantities[index][field] = field === "discount" ? Number(value) : value;
     setQuantities(newQuantities);
   };
 
   // Baskı seçeneği ekle
   const addPrintingOption = () => {
-    if (currentPrintingOption) {
-      setPrintingOptions([...printingOptions, currentPrintingOption]);
-      setCurrentPrintingOption('');
+    if (newPrintingLabel && newPrintingOptions >= 0) {
+      setPrintingOptions([
+        ...printingOptions,
+        { label: newPrintingLabel, price: newPrintingOptions },
+      ]);
+      setNewPrintingLabel("");
+      setNewPrintingOptions(0);
     }
   };
 
@@ -153,44 +150,45 @@ const EditModal = ({ product, onClose, onUpdate }) => {
 
   // Form gönderimi
   const handleSubmit = (e) => {
-  e.preventDefault();
-  
-  // Verileri stringify etmeden önce işle
-  const updateData = {
-    name,
-    description,
-    category,
-    subCategory,
-    bestseller,
-    coverOptions: {
-      price: includeCover ? coverPrice : 0,
-      colors: includeCover ? coverColors : []
-    },
-    sizes,
-    quantities: quantities.map(q => ({
-      label: q.label,
-      multiplier: q.multiplier,
-      discount: q.discount
-    })),
-    printingOptions
-  };
+    e.preventDefault();
 
-  // Verileri stringify et (eğer API bekliyorsa)
-  const stringifiedData = {
-    ...updateData,
-    coverOptions: JSON.stringify(updateData.coverOptions),
-    sizes: JSON.stringify(updateData.sizes),
-    quantities: JSON.stringify(updateData.quantities),
-    printingOptions: JSON.stringify(updateData.printingOptions)
-  };
+    // Verileri stringify etmeden önce işle
+    const updateData = {
+      name,
+      description,
+      category,
+      subCategory,
+      bestseller,
+      coverOptions: {
+        price: includeCover ? coverPrice : 0,
+        colors: includeCover ? coverColors : [],
+      },
+      sizes,
+      inStock,
+      quantities: quantities.map((q) => ({
+        label: q.label,
+        multiplier: q.multiplier,
+        discount: q.discount,
+      })),
+      printingOptions,
+    };
 
-  onUpdate(stringifiedData);
-};
+    // Verileri stringify et (eğer API bekliyorsa)
+    const stringifiedData = {
+      ...updateData,
+      coverOptions: JSON.stringify(updateData.coverOptions),
+      sizes: JSON.stringify(updateData.sizes),
+      quantities: JSON.stringify(updateData.quantities),
+      printingOptions: JSON.stringify(updateData.printingOptions),
+    };
+
+    onUpdate(stringifiedData);
+  };
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-bold mb-4">Ürün Düzenle</h2>
-        
+
         <form onSubmit={handleSubmit}>
           {/* Temel Bilgiler */}
           <div>
@@ -217,41 +215,41 @@ const EditModal = ({ product, onClose, onUpdate }) => {
           </div>
 
           {/* Kategori ve Alt Kategori */}
-           <div className="flex gap-4">
-          <div className="flex-1">
-            <p className="mb-2">Kategori</p>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full p-2 border rounded-lg"
-              required
-            >
-              <option value="">Kategori Seçin</option>
-              {categories.map((cat) => (
-                <option key={cat._id} value={cat._id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <p className="mb-2">Kategori</p>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full p-2 border rounded-lg"
+                required
+              >
+                <option value="">Kategori Seçin</option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div className="flex-1">
-            <p className="mb-2">Alt Kategori</p>
-            <select
-              value={subCategory}
-              onChange={(e) => setSubCategory(e.target.value)}
-              className="w-full p-2 border rounded-lg"
-              required
-            >
-              <option value="">Alt Kategori Seçin</option>
-              {subCategories.map((sub, index) => (
-                <option key={index} value={sub}>
-                  {sub}
-                </option>
-              ))}
-            </select>
+            <div className="flex-1">
+              <p className="mb-2">Alt Kategori</p>
+              <select
+                value={subCategory}
+                onChange={(e) => setSubCategory(e.target.value)}
+                className="w-full p-2 border rounded-lg"
+                required
+              >
+                <option value="">Alt Kategori Seçin</option>
+                {subCategories.map((sub, index) => (
+                  <option key={index} value={sub}>
+                    {sub}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
 
           <label className="flex items-center gap-2">
             <input
@@ -261,7 +259,14 @@ const EditModal = ({ product, onClose, onUpdate }) => {
             />
             Çok Satan
           </label>
-
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={inStock}
+              onChange={(e) => setInStock(e.target.checked)}
+            />
+            Stokta Var
+          </label>
           {/* Kapak Seçenekleri */}
           <div>
             <label className="flex items-center gap-2 mb-2">
@@ -306,7 +311,10 @@ const EditModal = ({ product, onClose, onUpdate }) => {
                   </div>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {coverColors.map((color, index) => (
-                      <div key={index} className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-lg">
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-lg"
+                      >
                         <span>{color}</span>
                         <button
                           type="button"
@@ -392,14 +400,18 @@ const EditModal = ({ product, onClose, onUpdate }) => {
                 <input
                   type="text"
                   value={qty.label}
-                  onChange={(e) => handleQuantityChange(index, 'label', e.target.value)}
+                  onChange={(e) =>
+                    handleQuantityChange(index, "label", e.target.value)
+                  }
                   placeholder="Miktar (örn: 1000)"
                   className="flex-1 p-2 border rounded-lg"
                 />
                 <input
                   type="number"
                   value={qty.multiplier}
-                  onChange={(e) => handleQuantityChange(index, 'multiplier', e.target.value)}
+                  onChange={(e) =>
+                    handleQuantityChange(index, "multiplier", e.target.value)
+                  }
                   placeholder="Çarpan"
                   className="w-20 p-2 border rounded-lg"
                   min="1"
@@ -407,7 +419,9 @@ const EditModal = ({ product, onClose, onUpdate }) => {
                 <input
                   type="number"
                   value={qty.discount}
-                  onChange={(e) => handleQuantityChange(index, 'discount', e.target.value)}
+                  onChange={(e) =>
+                    handleQuantityChange(index, "discount", e.target.value)
+                  }
                   placeholder="İndirim %"
                   className="w-20 p-2 border rounded-lg"
                   min="0"
@@ -449,20 +463,30 @@ const EditModal = ({ product, onClose, onUpdate }) => {
             </div>
           </div>
 
-          {/* Baskı Seçenekleri */}
           <div>
             <p className="mb-2">Baskı Seçenekleri</p>
             {printingOptions.map((option, index) => (
               <div key={index} className="flex gap-2 mb-2">
                 <input
                   type="text"
-                  value={option}
+                  value={option.label}
                   onChange={(e) => {
-                    const newPrintingOptions = [...printingOptions];
-                    newPrintingOptions[index] = e.target.value;
-                    setPrintingOptions(newPrintingOptions);
+                    const updatedOptions = [...printingOptions];
+                    updatedOptions[index].label = e.target.value;
+                    setPrintingOptions(updatedOptions);
                   }}
                   placeholder="Baskı Seçeneği"
+                  className="w-full p-2 border rounded-lg"
+                />
+                <input
+                  type="number"
+                  value={option.price}
+                  onChange={(e) => {
+                    const updatedOptions = [...printingOptions];
+                    updatedOptions[index].price = Number(e.target.value);
+                    setPrintingOptions(updatedOptions);
+                  }}
+                  placeholder="Fiyat"
                   className="w-full p-2 border rounded-lg"
                 />
                 <button
@@ -477,9 +501,16 @@ const EditModal = ({ product, onClose, onUpdate }) => {
             <div className="flex gap-2">
               <input
                 type="text"
-                value={currentPrintingOption}
-                onChange={(e) => setCurrentPrintingOption(e.target.value)}
+                value={newPrintingLabel}
+                onChange={(e) => setNewPrintingLabel(e.target.value)}
                 placeholder="Yeni Baskı Seçeneği"
+                className="w-full p-2 border rounded-lg"
+              />
+              <input
+                type="number"
+                value={newPrintingOptions}
+                onChange={(e) => setNewPrintingOptions(Number(e.target.value))}
+                placeholder="Fiyat"
                 className="w-full p-2 border rounded-lg"
               />
               <button

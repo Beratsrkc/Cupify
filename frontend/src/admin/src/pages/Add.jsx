@@ -1,48 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { toast } from 'react-toastify';
-import { assets } from '../assets/assets';
-import { backendUrl, } from "../config";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { assets } from "../assets/assets";
+import { backendUrl } from "../config";
 const Add = ({ token }) => {
   const [image1, setImage1] = useState(null);
   const [image2, setImage2] = useState(null);
   const [image3, setImage3] = useState(null);
   const [image4, setImage4] = useState(null);
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('');
-  const [subCategory, setSubCategory] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
   const [bestseller, setBestseller] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const [categories, setCategories] = useState([]);
-  const [newCategory, setNewCategory] = useState('');
-  const [newSubCategory, setNewSubCategory] = useState('');
+  const [newCategory, setNewCategory] = useState("");
+  const [newSubCategory, setNewSubCategory] = useState("");
 
   const [sizes, setSizes] = useState([]); // Ebatlar için
   const [quantities, setQuantities] = useState([]); // Sipariş miktarları için
-const [currentQuantity, setCurrentQuantity] = useState('');
-const [currentDiscount, setCurrentDiscount] = useState(0); // Yeni eklenen indirim state'i
-  const [printingOptions, setPrintingOptions] = useState([]); // Baskı seçenekleri için
-  const [currentPrintingOption, setCurrentPrintingOption] = useState(''); // Geçerli baskı seçeneği
-
+  const [currentQuantity, setCurrentQuantity] = useState("");
+  const [currentDiscount, setCurrentDiscount] = useState(0); // Yeni eklenen indirim state'i
+  const [printingOptions, setPrintingOptions] = useState([]); // [{label: "...", price: 0}]
+  const [currentPrintingOption, setCurrentPrintingOption] = useState({
+    label: "",
+    price: 0,
+  });
   // Kapak seçeneği için state'ler
   const [includeCover, setIncludeCover] = useState(false); // Kapak eklemek istiyor mu?
   const [coverPrice, setCoverPrice] = useState(0); // Kapak fiyatı
   const [coverColors, setCoverColors] = useState([]); // Kapak renkleri
-  const [currentCoverColor, setCurrentCoverColor] = useState(''); // Geçerli kapak rengi
+  const [currentCoverColor, setCurrentCoverColor] = useState(""); // Geçerli kapak rengi
 
   // Kategori ekleme formunun görünürlüğü için state
   const [showCategoryForm, setShowCategoryForm] = useState(false);
-
+  const [inStock, setInStock] = useState(true);
   // Kapak rengi ekle
   const addCoverColor = () => {
     if (currentCoverColor) {
       setCoverColors([...coverColors, currentCoverColor]);
-      setCurrentCoverColor(''); // Inputu temizle
+      setCurrentCoverColor(""); // Inputu temizle
     } else {
-      toast.error('Lütfen geçerli bir renk girin!');
+      toast.error("Lütfen geçerli bir renk girin!");
     }
   };
 
@@ -59,7 +61,7 @@ const [currentDiscount, setCurrentDiscount] = useState(0); // Yeni eklenen indir
         const response = await axios.get(`${backendUrl}/api/category/list`);
         setCategories(response.data.categories);
       } catch (error) {
-        toast.error('Kategoriler yüklenemedi');
+        toast.error("Kategoriler yüklenemedi");
       }
     };
     fetchCategories();
@@ -68,7 +70,7 @@ const [currentDiscount, setCurrentDiscount] = useState(0); // Yeni eklenen indir
   // Yeni kategori ekle
   const addNewCategory = async () => {
     if (!newCategory) {
-      toast.error('Kategori adı gerekli');
+      toast.error("Kategori adı gerekli");
       return;
     }
     try {
@@ -78,17 +80,17 @@ const [currentDiscount, setCurrentDiscount] = useState(0); // Yeni eklenen indir
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setCategories([...categories, response.data.category]);
-      setNewCategory('');
-      toast.success('Kategori eklendi');
+      setNewCategory("");
+      toast.success("Kategori eklendi");
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Hata oluştu');
+      toast.error(error.response?.data?.message || "Hata oluştu");
     }
   };
 
   // Yeni alt kategori ekle
   const addNewSubCategory = async () => {
     if (!category || !newSubCategory) {
-      toast.error('Kategori seçin ve alt kategori adı girin');
+      toast.error("Kategori seçin ve alt kategori adı girin");
       return;
     }
     try {
@@ -97,19 +99,21 @@ const [currentDiscount, setCurrentDiscount] = useState(0); // Yeni eklenen indir
         { subCategory: newSubCategory },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setCategories(categories.map(cat =>
-        cat._id === category ? response.data.category : cat
-      ));
-      setNewSubCategory('');
-      toast.success('Alt kategori eklendi');
+      setCategories(
+        categories.map((cat) =>
+          cat._id === category ? response.data.category : cat
+        )
+      );
+      setNewSubCategory("");
+      toast.success("Alt kategori eklendi");
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Hata oluştu');
+      toast.error(error.response?.data?.message || "Hata oluştu");
     }
   };
 
   // Ebat ekle
   const addSize = () => {
-    setSizes([...sizes, { label: '', price: 0 }]);
+    setSizes([...sizes, { label: "", price: 0 }]);
   };
 
   // Ebat değişikliği
@@ -120,22 +124,22 @@ const [currentDiscount, setCurrentDiscount] = useState(0); // Yeni eklenen indir
   };
 
   // Sipariş miktarı ekle
-const addQuantity = () => {
-  if (currentQuantity) {
-    setQuantities([
-      ...quantities, 
-      { 
-        label: currentQuantity, 
-        multiplier: 1,
-        discount: Number(currentDiscount) || 0 // İndirim değerini ekleyin
-      }
-    ]);
-    setCurrentQuantity('');
-    setCurrentDiscount(0); // Inputu sıfırla
-  } else {
-    toast.error('Lütfen geçerli bir miktar girin!');
-  }
-};
+  const addQuantity = () => {
+    if (currentQuantity) {
+      setQuantities([
+        ...quantities,
+        {
+          label: currentQuantity,
+          multiplier: 1,
+          discount: Number(currentDiscount) || 0, // İndirim değerini ekleyin
+        },
+      ]);
+      setCurrentQuantity("");
+      setCurrentDiscount(0); // Inputu sıfırla
+    } else {
+      toast.error("Lütfen geçerli bir miktar girin!");
+    }
+  };
 
   // Sipariş miktarı sil
   const removeQuantity = (index) => {
@@ -145,11 +149,11 @@ const addQuantity = () => {
 
   // Baskı seçeneği ekle
   const addPrintingOption = () => {
-    if (currentPrintingOption) {
+    if (currentPrintingOption.label && currentPrintingOption.price >= 0) {
       setPrintingOptions([...printingOptions, currentPrintingOption]);
-      setCurrentPrintingOption(''); // Inputu temizle
+      setCurrentPrintingOption({ label: "", price: 0 }); // Inputları temizle
     } else {
-      toast.error('Lütfen geçerli bir baskı seçeneği girin!');
+      toast.error("Lütfen geçerli bir baskı seçeneği ve fiyat girin!");
     }
   };
 
@@ -163,59 +167,68 @@ const addQuantity = () => {
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-  
+
     try {
       const formData = new FormData();
-      formData.append('name', name);
-      formData.append('description', description);
-      formData.append('category', category);
-      formData.append('subCategory', subCategory);
-      formData.append('bestseller', bestseller); 
-      formData.append('sizes', JSON.stringify(sizes));
-      formData.append('quantities', JSON.stringify(quantities));
-      formData.append('printingOptions', JSON.stringify(printingOptions));
-  
-
+      formData.append("name", name);
+      formData.append("description", description);
+      formData.append("category", category);
+      formData.append("subCategory", subCategory);
+      formData.append("bestseller", bestseller);
+      formData.append("sizes", JSON.stringify(sizes));
+      formData.append("quantities", JSON.stringify(quantities));
+      formData.append("printingOptions", JSON.stringify(printingOptions));
+      formData.append("inStock", inStock);
       // Kapak seçeneği ekle
       if (includeCover) {
-        formData.append('coverOptions', JSON.stringify({
-          price: coverPrice,
-          colors: coverColors
-        }));
+        formData.append(
+          "coverOptions",
+          JSON.stringify({
+            price: coverPrice,
+            colors: coverColors,
+          })
+        );
       } else {
-        formData.append('coverOptions', JSON.stringify({
-          price: 0,
-          colors: []
-        }));
+        formData.append(
+          "coverOptions",
+          JSON.stringify({
+            price: 0,
+            colors: [],
+          })
+        );
       }
 
       // Resimleri ekle
-      if (image1) formData.append('image1', image1);
-      if (image2) formData.append('image2', image2);
-      if (image3) formData.append('image3', image3);
-      if (image4) formData.append('image4', image4);
+      if (image1) formData.append("image1", image1);
+      if (image2) formData.append("image2", image2);
+      if (image3) formData.append("image3", image3);
+      if (image4) formData.append("image4", image4);
 
-      const response = await axios.post(`${backendUrl}/api/product/add`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.post(
+        `${backendUrl}/api/product/add`,
+        formData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (response.data.success) {
-        toast.success('Ürün başarıyla eklendi');
+        toast.success("Ürün başarıyla eklendi");
         // Formu sıfırla
-        setName('');
-        setDescription('');
-        setCategory('');
-        setSubCategory('');
+        setName("");
+        setDescription("");
+        setCategory("");
+        setSubCategory("");
         setBestseller(false);
         setSizes([]);
         setQuantities([]);
-        setCurrentQuantity('');
+        setCurrentQuantity("");
         setPrintingOptions([]);
-        setCurrentPrintingOption('');
+        setCurrentPrintingOption({ label: "", price: 0 });
         setIncludeCover(false);
         setCoverPrice(0);
         setCoverColors([]);
-        setCurrentCoverColor('');
+        setCurrentCoverColor("");
         setImage1(null);
         setImage2(null);
         setImage3(null);
@@ -247,7 +260,12 @@ const addQuantity = () => {
                 />
                 <input
                   onChange={(e) => {
-                    const setImage = [setImage1, setImage2, setImage3, setImage4][index];
+                    const setImage = [
+                      setImage1,
+                      setImage2,
+                      setImage3,
+                      setImage4,
+                    ][index];
                     setImage(e.target.files[0]);
                   }}
                   type="file"
@@ -291,7 +309,9 @@ const addQuantity = () => {
             onClick={() => setShowCategoryForm(!showCategoryForm)}
             className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mb-4"
           >
-            {showCategoryForm ? 'Kategori Ekleme Alanını Kapat' : 'Kategori Ekle'}
+            {showCategoryForm
+              ? "Kategori Ekleme Alanını Kapat"
+              : "Kategori Ekle"}
           </button>
 
           {showCategoryForm && (
@@ -375,11 +395,13 @@ const addQuantity = () => {
               required
             >
               <option value="">Alt Kategori Seçin</option>
-              {categories.find(c => c._id === category)?.subCategories?.map((sub, i) => (
-                <option key={i} value={sub}>
-                  {sub}
-                </option>
-              ))}
+              {categories
+                .find((c) => c._id === category)
+                ?.subCategories?.map((sub, i) => (
+                  <option key={i} value={sub}>
+                    {sub}
+                  </option>
+                ))}
             </select>
           </div>
         </div>
@@ -392,17 +414,22 @@ const addQuantity = () => {
               <input
                 type="text"
                 value={size.label}
-                onChange={(e) => handleSizeChange(index, 'label', e.target.value)}
+                onChange={(e) =>
+                  handleSizeChange(index, "label", e.target.value)
+                }
                 placeholder="Ebat Adı (örneğin, 7oz)"
                 className="w-full max-w-[200px] px-3 py-2 border rounded"
               />
               <input
                 type="number"
                 value={size.price}
-                onChange={(e) => handleSizeChange(index, 'price', e.target.value)}
+                onChange={(e) =>
+                  handleSizeChange(index, "price", e.target.value)
+                }
                 placeholder="Birim Fiyat"
                 className="w-full max-w-[100px] px-3 py-2 border rounded"
-              />₺
+              />
+              ₺
             </div>
           ))}
           <button
@@ -415,66 +442,89 @@ const addQuantity = () => {
         </div>
 
         {/* Sipariş Miktarları */}
-<div>
-  <p className="mb-2">Sipariş Miktarları (Adet ve İndirim)</p>
-  <div className="flex flex-col sm:flex-row gap-2 mb-2">
-    <div className="flex items-center gap-2">
-      <input
-        type="number"
-        value={currentQuantity}
-        onChange={(e) => setCurrentQuantity(e.target.value)}
-        placeholder="Sipariş Miktarı"
-        className="w-full max-w-[150px] px-3 py-2 border rounded"
-        min="1"
-      />
-      <span>Adet</span>
-    </div>
-    <div className="flex items-center gap-2">
-      <input
-        type="number"
-        value={currentDiscount}
-        onChange={(e) => setCurrentDiscount(e.target.value)}
-        placeholder="İndirim %"
-        className="w-full max-w-[100px] px-3 py-2 border rounded"
-        min="0"
-        max="100"
-      />
-      <span>% İndirim</span>
-    </div>
-    <button
-      type="button"
-      onClick={addQuantity}
-      className="bg-green-500 text-white px-3 py-2 rounded"
-    >
-      Ekle
-    </button>
-  </div>
-  
-  {quantities.map((qty, index) => (
-    <div key={index} className="flex items-center gap-2 mb-2">
-      <span>{qty.label} Adet - {qty.discount}% İndirim</span>
-      <button
-        type="button"
-        onClick={() => removeQuantity(index)}
-        className="bg-orangeBrand text-white px-3 py-1 rounded"
-      >
-        Sil
-      </button>
-    </div>
-  ))}
-</div>
+        <div>
+          <p className="mb-2">Sipariş Miktarları (Adet ve İndirim)</p>
+          <div className="flex flex-col sm:flex-row gap-2 mb-2">
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={currentQuantity}
+                onChange={(e) => setCurrentQuantity(e.target.value)}
+                placeholder="Sipariş Miktarı"
+                className="w-full max-w-[150px] px-3 py-2 border rounded"
+                min="1"
+              />
+              <span>Adet</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={currentDiscount}
+                onChange={(e) => setCurrentDiscount(e.target.value)}
+                placeholder="İndirim %"
+                className="w-full max-w-[100px] px-3 py-2 border rounded"
+                min="0"
+                max="100"
+              />
+              <span>% İndirim</span>
+            </div>
+            <button
+              type="button"
+              onClick={addQuantity}
+              className="bg-green-500 text-white px-3 py-2 rounded"
+            >
+              Ekle
+            </button>
+          </div>
+
+          {quantities.map((qty, index) => (
+            <div key={index} className="flex items-center gap-2 mb-2">
+              <span>
+                {qty.label} Adet - {qty.discount}% İndirim
+              </span>
+              <button
+                type="button"
+                onClick={() => removeQuantity(index)}
+                className="bg-orangeBrand text-white px-3 py-1 rounded"
+              >
+                Sil
+              </button>
+            </div>
+          ))}
+        </div>
 
         {/* Baskı Seçenekleri */}
         <div>
           <p className="mb-2">Baskı Seçenekleri</p>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex flex-col sm:flex-row gap-2 mb-2">
             <input
               type="text"
-              value={currentPrintingOption}
-              onChange={(e) => setCurrentPrintingOption(e.target.value)}
+              value={currentPrintingOption.label}
+              onChange={(e) =>
+                setCurrentPrintingOption({
+                  ...currentPrintingOption,
+                  label: e.target.value,
+                })
+              }
               placeholder="Baskı Seçeneği (örneğin, Tek Renk)"
               className="w-full max-w-[200px] px-3 py-2 border rounded"
             />
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={currentPrintingOption.price}
+                onChange={(e) =>
+                  setCurrentPrintingOption({
+                    ...currentPrintingOption,
+                    price: Number(e.target.value),
+                  })
+                }
+                placeholder="Fiyat"
+                className="w-full max-w-[100px] px-3 py-2 border rounded"
+                min="0"
+              />
+              ₺
+            </div>
             <button
               type="button"
               onClick={addPrintingOption}
@@ -485,7 +535,9 @@ const addQuantity = () => {
           </div>
           {printingOptions.map((option, index) => (
             <div key={index} className="flex items-center gap-2 mb-2">
-              <span>{option}</span>
+              <span>
+                {option.label} - {option.price}₺
+              </span>
               <button
                 type="button"
                 onClick={() => removePrintingOption(index)}
@@ -519,7 +571,8 @@ const addQuantity = () => {
                   onChange={(e) => setCoverPrice(Number(e.target.value))}
                   placeholder="Kapak Fiyatı"
                   className="w-full max-w-[100px] px-3 py-2 border rounded"
-                />₺
+                />
+                ₺
               </div>
               <div className="flex items-center gap-2">
                 <input
@@ -565,14 +618,24 @@ const addQuantity = () => {
             Çok Satanlara ekle
           </label>
         </div>
-
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="inStock"
+            checked={inStock}
+            onChange={() => setInStock((prev) => !prev)}
+          />
+          <label htmlFor="inStock" className="cursor-pointer">
+            Stokta Var
+          </label>
+        </div>
         {/* Gönder Butonu */}
         <button
           type="submit"
           className="w-28 py-2 bg-black text-white rounded"
           disabled={isLoading}
         >
-          {isLoading ? 'Yükleniyor...' : 'EKLE'}
+          {isLoading ? "Yükleniyor..." : "EKLE"}
         </button>
       </form>
     </div>

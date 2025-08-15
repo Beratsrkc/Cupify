@@ -9,8 +9,10 @@ const ShopContextProvider = (props) => {
   const currency = '₺';
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const generateCartItemKey = (item) => {
-    return `${item.id}-${item.selectedSize.label}-${item.selectedPrintingOption}-${item.selectedCoverOption}-${item.selectedQuantity}`;
-  };
+  return `${item.id}-${item.selectedSize.label}-${
+    item.selectedPrintingOption?.label || 'none'
+  }-${item.selectedCoverOption || 'none'}-${item.selectedQuantity.label}`;
+};
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
 
@@ -117,35 +119,46 @@ const ShopContextProvider = (props) => {
   };
 
   // Sepete ürün ekle
-  const addToCart = async (item) => {
-    const { id, quantity, selectedSize, selectedPrintingOption, selectedCoverOption, totalPrice, image, selectedQuantity } = item;
+ const addToCart = async (item) => {
+  const { id, quantity, selectedSize, selectedPrintingOption, selectedCoverOption, selectedQuantity, image } = item;
   
-    if (quantity <= 0) {
-      toast.error("Lütfen geçerli bir miktar girin.");
-      return;
-    }
+  // Fiyatı burada hesapla
+  let basePrice = selectedSize.price * selectedQuantity.label;
+  basePrice = basePrice * (1 - (selectedQuantity.discount || 0) / 100);
   
-    const itemKey = generateCartItemKey(item); // Benzersiz anahtar oluştur
+  // Baskı fiyatını ekle
+  if (selectedPrintingOption?.price) {
+    basePrice += selectedPrintingOption.price * selectedQuantity.label;
+  }
   
-    let cartData = structuredClone(cartItems);
-  
-    if (cartData[itemKey]) {
-      // Eğer ürün sepette varsa, miktarı güncelle
-      cartData[itemKey].quantity += quantity;
-    } else {
-      // Eğer ürün sepette yoksa, yeni bir ürün ekle
-      cartData[itemKey] = {
-        quantity,
-        selectedQuantity,
-        selectedSize,
-        selectedPrintingOption,
-        selectedCoverOption,
-        totalPrice,
-        image,
-      };
-    }
-  
-    setCartItems(cartData);
+  // Kapak fiyatını ekle
+  if (selectedCoverOption && selectedCoverOption !== "Yok") {
+    // Burada productData yok, o yüzden coverPrice'ı direkt item içinde göndermen gerekebilir
+    basePrice += (item.coverPrice || 0) * selectedQuantity.label;
+  }
+
+  const totalPrice = basePrice * quantity;
+
+  const itemKey = generateCartItemKey(item);
+
+  let cartData = structuredClone(cartItems);
+
+  if (cartData[itemKey]) {
+    cartData[itemKey].quantity += quantity;
+  } else {
+    cartData[itemKey] = {
+      quantity,
+      selectedQuantity,
+      selectedSize,
+      selectedPrintingOption,
+      selectedCoverOption,
+      totalPrice: basePrice, // Birim fiyatı kaydediyoruz
+      image,
+    };
+  }
+
+  setCartItems(cartData);
+
   
     if (token) {
       try {

@@ -33,6 +33,7 @@ const ProductItem = React.memo(({
   quantities = [],
   coverOptions,
   bestsellerBadge,
+  inStock
 }) => {
   const { currency } = useContext(ShopContext);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -118,83 +119,94 @@ const ProductItem = React.memo(({
   };
 
   return (
-    <Link
-      className="text-gray-700 cursor-pointer relative group block"
-      to={`/product/${productSlug}`}
-      aria-label={`${name} ürün detayları`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <div className="flex flex-col relative h-full">
-        {/* İndirim etiketi */}
-        
-
-        {/* Bestseller etiketi */}
-        {bestsellerBadge && (
-          <div className="absolute top-2 left-2 bg-orangeBrand text-white text-xs px-2 py-1 rounded z-50">
-            Çok Satan
-          </div>
-        )}
-
-        {/* Resim Container */}
-        <div className="w-full h-72 border rounded-md overflow-hidden relative bg-gray-100">
-          {/* Arkaplan ve yükleme efekti */}
-          <div 
-            className="absolute inset-0 z-0 opacity-50"
-            style={placeholderBackground}
-          />
-          
-          {/* Yükleme animasyonu */}
-          {!imageLoaded && !imageError && (
-            <div className="absolute inset-0 flex items-center justify-center z-10">
-              <AiOutlineReload className="animate-spin text-gray-400" />
+    <div className={`relative group ${!inStock ? 'opacity-80' : ''}`}>
+      <Link
+        className="text-gray-700 cursor-pointer block"
+        to={`/product/${productSlug}`}
+        aria-label={`${name} ürün detayları`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className="flex flex-col relative h-full">
+          {/* Stokta yok etiketi */}
+          {!inStock && (
+            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded z-50">
+              STOKTA YOK
             </div>
           )}
 
-          {/* Resim */}
-          <img
-            ref={imgRef}
-            className={`w-full h-full object-contain transition-transform duration-300 relative z-20 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            } ${isHovered ? 'scale-105' : ''}`}
-            src={imageError ? "/assets/placeholder.png" : imageUrl}
-            alt={name}
-            loading="lazy"
-            decoding="async"
-            onLoad={handleImageLoad}
-            onError={handleImageError}
-          />
-        </div>
+          {/* Bestseller etiketi */}
+          {bestsellerBadge && (
+            <div className="absolute top-2 left-2 bg-orangeBrand text-white text-xs px-2 py-1 rounded z-50">
+              Çok Satan
+            </div>
+          )}
 
-        {/* Ürün Bilgileri */}
-        <div className="pt-3 flex-1">
-          <h3 className="text-base font-medium text-gray-800 line-clamp-2">{name}</h3>
-          <p className="text-sm text-gray-500 mt-1">{formatSizes()}</p>
-          
-          <div className="mt-2">
-            {minPrice === maxPrice ? (
-              <p className="text-base font-medium text-black">
-                {currency}
-                {formatPrice(minPrice)}
-              </p>
-            ) : (
-              <div>
-                <p className="text-base font-medium text-black">
-                  {currency}
-                  {formatPrice(minPrice)} - {currency}
-                  {formatPrice(maxPrice)}
-                </p>
-                {bestDiscount > 0 && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    %{bestDiscount}'e varan indirimler
-                  </p>
-                )}
+          {/* Resim Container */}
+          <div className="w-full h-72 border rounded-md overflow-hidden relative bg-gray-100">
+            {/* Arkaplan ve yükleme efekti */}
+            <div 
+              className="absolute inset-0 z-0 opacity-50"
+              style={placeholderBackground}
+            />
+            
+            {/* Yükleme animasyonu */}
+            {!imageLoaded && !imageError && (
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <AiOutlineReload className="animate-spin text-gray-400" />
               </div>
+            )}
+
+            {/* Resim */}
+            <img
+              ref={imgRef}
+              className={`w-full h-full object-contain transition-transform duration-300 relative z-20 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              } ${isHovered ? 'scale-105' : ''}`}
+              src={imageError ? "/assets/placeholder.png" : imageUrl}
+              alt={name}
+              loading="lazy"
+              decoding="async"
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+            />
+          </div>
+
+          {/* Ürün Bilgileri */}
+          <div className="pt-3 flex-1">
+            <h3 className="text-base font-medium text-gray-800 line-clamp-2">{name}</h3>
+            {inStock ? (
+              <>
+                <p className="text-sm text-gray-500 mt-1">{formatSizes()}</p>
+                <div className="mt-2">
+                  {minPrice === maxPrice ? (
+                    <p className="text-base font-medium text-black">
+                      {currency}
+                      {formatPrice(minPrice)}
+                    </p>
+                  ) : (
+                    <div>
+                      <p className="text-base font-medium text-black">
+                        {currency}
+                        {formatPrice(minPrice)} - {currency}
+                        {formatPrice(maxPrice)}
+                      </p>
+                      {bestDiscount > 0 && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          %{bestDiscount}'e varan indirimler
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <p className="text-red-600 text-sm mt-2">Stokta Yok</p>
             )}
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 });
 

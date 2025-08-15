@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { toast } from 'react-toastify';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
 import { backendUrl, currency } from "../config";
-import EditModal from '../components/EditModal';
+import EditModal from "../components/EditModal";
 
 const List = ({ token }) => {
   const [list, setList] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null); // Seçilen ürün
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Modal açık/kapalı
 
   // Ürün listesini çek
   const fetchList = async () => {
     try {
-      const response = await axios.get(backendUrl + '/api/product/list');
+      const response = await axios.get(backendUrl + "/api/product/list");
       if (response.data.success) {
         setList(response.data.products);
       } else {
@@ -28,7 +28,7 @@ const List = ({ token }) => {
   const removeProduct = async (id) => {
     try {
       const response = await axios.post(
-        backendUrl + '/api/product/remove',
+        backendUrl + "/api/product/remove",
         { id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -54,7 +54,7 @@ const List = ({ token }) => {
   const updateProduct = async (updatedData) => {
     try {
       const response = await axios.post(
-        backendUrl + '/api/product/update',
+        backendUrl + "/api/product/update",
         { ...updatedData, productId: selectedProduct._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -108,6 +108,7 @@ const List = ({ token }) => {
           <b>Kapak Fiyatı</b>
           <b>Ebatlar</b>
           <b>Sipariş Adetleri</b>
+          <b>Stok Durumu</b>
           <b>Aksiyon</b>
         </div>
 
@@ -115,7 +116,7 @@ const List = ({ token }) => {
         {filteredList.map((item, index) => (
           <div
             key={index}
-            className="flex flex-col md:grid md:grid-cols-[1fr_3fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+            className="flex flex-col md:grid md:grid-cols-[1fr_3fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
           >
             {/* Resim */}
             <div className="flex items-center">
@@ -133,20 +134,22 @@ const List = ({ token }) => {
 
             {/* Kategori */}
             <div className="flex items-center">
-              <p className="text-gray-600">{item.category?.name || 'Belirtilmemiş'}</p>
+              <p className="text-gray-600">
+                {item.category?.name || "Belirtilmemiş"}
+              </p>
             </div>
 
             {/* Alt Kategori */}
             <div className="flex items-center">
-              <p className="text-gray-600">{item.subCategory || 'Belirtilmemiş'}</p>
+              <p className="text-gray-600">
+                {item.subCategory || "Belirtilmemiş"}
+              </p>
             </div>
-
-     
 
             {/* Çok Satan */}
             <div className="flex items-center">
               <p className="text-gray-800">
-                {item.bestseller ? 'Evet' : 'Hayır'}
+                {item.bestseller ? "Evet" : "Hayır"}
               </p>
             </div>
 
@@ -176,7 +179,15 @@ const List = ({ token }) => {
                 </p>
               ))}
             </div>
-
+            <div className="flex items-center">
+            <button
+              className={`px-3 py-1 rounded-lg text-white ${
+                item.inStock ? "bg-green-500" : "bg-red-500"
+              }`}
+            >
+              {item.inStock ? "Stokta" : "Tükendi"}
+            </button>
+          </div>
             {/* Aksiyon Butonları */}
             <div className="flex items-center gap-2">
               <button

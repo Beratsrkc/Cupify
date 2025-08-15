@@ -18,7 +18,7 @@ const addToCart = async (req, res) => {
         quantity,
         name,
         selectedSize,
-        selectedQuantity, // DÜZELTİLDİ
+        selectedQuantity, 
         selectedPrintingOption,
         selectedCoverOption,
         totalPrice,

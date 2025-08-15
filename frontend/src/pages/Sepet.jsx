@@ -9,24 +9,19 @@ const Cart = () => {
   const { products, currency, cartItems, updateQuantity, navigate, token, getCartAmount } = useContext(ShopContext);
 
   const { subtotal, total } = getCartAmount();
-  const vatAmount = subtotal * 0.2; // KDV, subtotal üzerine eklenecek
-  const totalWithVAT = subtotal + vatAmount; // KDV dahil toplam
+  const vatAmount = subtotal * 0.2;
+  const totalWithVAT = subtotal + vatAmount;
 
   const [cartData, setCartData] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
-
-  // Benzersiz cartItem key'i oluştur
-  const generateCartItemKey = (item) => {
-    return `${item.id}-${item.selectedSize?.label}-${item.selectedPrintingOption}-${item.selectedCoverOption}-${item.selectedQuantity}`;
-  };
 
   useEffect(() => {
     const tempData = Object.keys(cartItems)
       .filter(itemKey => cartItems[itemKey].quantity > 0)
       .map(itemKey => ({
         ...cartItems[itemKey],
-        _id: itemKey, // Benzersiz key'i _id olarak kullan
+        _id: itemKey,
       }));
     setCartData(tempData);
   }, [cartItems, products]);
@@ -53,136 +48,149 @@ const Cart = () => {
           <Title text1={'ALIŞVERİŞ'} text2={'SEPETİ'} />
         </div>
         {cartData.map((item, index) => {
-  const productData = products.find(p => p._id === item._id.split('-')[0]); // _id'den ürün id'sini al
-  if (!productData) return null;
+          const productData = products.find(p => p._id === item._id.split('-')[0]);
+          if (!productData) return null;
 
-  const productImage = item.image || productData.images?.[0] || assets.default_image;
-  const formattedPrice = item.totalPrice.toLocaleString('tr-TR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+          const productImage = item.image || productData.images?.[0] || assets.default_image;
+          const formattedPrice = item.totalPrice.toLocaleString('tr-TR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
 
-  return (
-    <div key={index} className="py-4 border-t border-b text-gray-700">
-      {/* Masaüstü Görünümü */}
-      <div className="hidden sm:flex items-start gap-6">
-        <img
-          className="w-32 h-32 object-cover rounded-lg"
-          src={productImage}
-          alt="product"
-        />
-        <div className="w-full flex flex-col gap-2">
-          <p className="text-lg font-medium">{productData.name}</p>
-          <div className="flex flex-col gap-1">
-            {item.selectedSize && (
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Ebat:</span> {item.selectedSize.label}
-              </p>
-            )}
-            {item.selectedCoverOption && (
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Kapak:</span> {item.selectedCoverOption}
-              </p>
-            )}
-            {item.selectedPrintingOption && (
+          // Baskı seçeneğini doğru şekilde render et
+          const renderPrintingOption = () => {
+            if (!item.selectedPrintingOption) return null;
+            
+            // Eğer bir obje ise label ve price'ı göster
+            if (typeof item.selectedPrintingOption === 'object') {
+              return (
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Baskı:</span> {item.selectedPrintingOption.label} - {item.selectedPrintingOption.price}₺
+                </p>
+              );
+            }
+            
+            // Eğer string ise direkt göster
+            return (
               <p className="text-sm text-gray-600">
                 <span className="font-medium">Baskı:</span> {item.selectedPrintingOption}
               </p>
-            )}
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Sipariş Miktarı:</span> {item.selectedQuantity} Adet
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-10">
-          <div className="flex items-center gap-2">
-            <p className="text-lg font-medium text-black">
-              {currency}{formattedPrice} {/* Currency ve fiyat yan yana */}
-            </p>
-          </div>
-          <div className="w-20">
-            <input
-              onChange={(e) => {
-                const value = parseInt(e.target.value);
-                if (value > 0) updateQuantity(item._id, value);
-              }}
-              className="border w-full px-2 py-1 text-center outline-none rounded-lg"
-              type="number"
-              min="1"
-              value={item.quantity}
-            />
-          </div>
-          <img
-            onClick={() => updateQuantity(item._id, 0)}
-            className="w-5 h-5 cursor-pointer hover:opacity-75 transition-opacity"
-            src={assets.bin_icon}
-            alt="Sil"
-          />
-        </div>
+            );
+          };
+
+          return (
+            <div key={index} className="py-4 border-t border-b text-gray-700">
+              {/* Masaüstü Görünümü */}
+              <div className="hidden sm:flex items-start gap-6">
+                <img
+                  className="w-32 h-32 object-cover rounded-lg"
+                  src={productImage}
+                  alt="product"
+                />
+                <div className="w-full flex flex-col gap-2">
+                  <p className="text-lg font-medium">{productData.name}</p>
+                  <div className="flex flex-col gap-1">
+                    {item.selectedSize && (
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Ebat:</span> {item.selectedSize.label}
+                      </p>
+                    )}
+                    {item.selectedCoverOption && (
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Kapak:</span> {item.selectedCoverOption}
+                      </p>
+                    )}
+                    {renderPrintingOption()}
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Sipariş Miktarı:</span> {item.selectedQuantity.label} Adet
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-10">
+                  <div className="flex items-center gap-2">
+                    <p className="text-lg font-medium text-black">
+                      {currency}{formattedPrice}
+                    </p>
+                  </div>
+                  <div className="w-20">
+                    <input
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (value > 0) updateQuantity(item._id, value);
+                      }}
+                      className="border w-full px-2 py-1 text-center outline-none rounded-lg"
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                    />
+                  </div>
+                  <img
+                    onClick={() => updateQuantity(item._id, 0)}
+                    className="w-5 h-5 cursor-pointer hover:opacity-75 transition-opacity"
+                    src={assets.bin_icon}
+                    alt="Sil"
+                  />
+                </div>
+              </div>
+
+              {/* Mobil Görünümü */}
+              <div className="sm:hidden flex flex-col gap-4">
+                <p className="text-lg font-medium">{productData.name}</p>
+                <div className="flex gap-4">
+                  <img
+                    className="w-32 h-32 object-cover rounded-lg"
+                    src={productImage}
+                    alt="product"
+                  />
+                  <div className="flex flex-col gap-1">
+                    {item.selectedSize && (
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Ebat:</span> {item.selectedSize.label}
+                      </p>
+                    )}
+                    {item.selectedCoverOption && (
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Kapak:</span> {item.selectedCoverOption}
+                      </p>
+                    )}
+                    {renderPrintingOption()}
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Sipariş Miktarı:</span> {item.selectedQuantity.label} Adet
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <p className="text-lg font-medium text-black">
+                      {currency}{formattedPrice}
+                    </p>
+                  </div>
+                  <div className="w-20">
+                    <input
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (value > 0) updateQuantity(item._id, value);
+                      }}
+                      className="border w-full px-2 py-1 text-center outline-none rounded-lg"
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                    />
+                  </div>
+                  <img
+                    onClick={() => updateQuantity(item._id, 0)}
+                    className="w-5 h-5 cursor-pointer hover:opacity-75 transition-opacity"
+                    src={assets.bin_icon}
+                    alt="Sil"
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Mobil Görünümü */}
-      <div className="sm:hidden flex flex-col gap-4">
-        <p className="text-lg font-medium">{productData.name}</p>
-        <div className="flex gap-4">
-          <img
-            className="w-32 h-32 object-cover rounded-lg"
-            src={productImage}
-            alt="product"
-          />
-          <div className="flex flex-col gap-1">
-            {item.selectedSize && (
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Ebat:</span> {item.selectedSize.label}
-              </p>
-            )}
-            {item.selectedCoverOption && (
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Kapak:</span> {item.selectedCoverOption}
-              </p>
-            )}
-            {item.selectedPrintingOption && (
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Baskı:</span> {item.selectedPrintingOption}
-              </p>
-            )}
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Sipariş Miktarı:</span> {item.selectedQuantity} Adet
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <p className="text-lg font-medium text-black">
-              {currency}{formattedPrice} {/* Currency ve fiyat yan yana */}
-            </p>
-          </div>
-          <div className="w-20">
-            <input
-              onChange={(e) => {
-                const value = parseInt(e.target.value);
-                if (value > 0) updateQuantity(item._id, value);
-              }}
-              className="border w-full px-2 py-1 text-center outline-none rounded-lg"
-              type="number"
-              min="1"
-              value={item.quantity}
-            />
-          </div>
-          <img
-            onClick={() => updateQuantity(item._id, 0)}
-            className="w-5 h-5 cursor-pointer hover:opacity-75 transition-opacity"
-            src={assets.bin_icon}
-            alt="Sil"
-          />
-        </div>
-      </div>
-    </div>
-  );
-})}
-      </div>
-
-      {/* CartTotal ve Ödeme Butonu (Mobilde Sabit) */}
+      {/* CartTotal ve Ödeme Butonu */}
       <div className="fixed lg:static bottom-0 left-0 w-full bg-white lg:bg-transparent lg:w-1/3 border-t lg:border-t-0 shadow-lg lg:shadow-none">
         <div className="p-4 lg:p-0">
           <div className={`${isDetailsVisible ? 'block' : 'hidden'} lg:block`}>
