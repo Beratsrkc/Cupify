@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
@@ -23,7 +23,7 @@ const generateSlug = (text) => {
 
 const Product = () => {
   const { slug } = useParams();
-  const { products, currency, addToCart } = useContext(ShopContext);
+  const { products, currency, addToCart, categories } = useContext(ShopContext);
   const [productData, setProductData] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isAdded, setIsAdded] = useState(false);
@@ -34,9 +34,10 @@ const Product = () => {
   const [cartQuantity, setCartQuantity] = useState(1);
   const [selectedQuantity, setSelectedQuantity] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [categoryPath, setCategoryPath] = useState([]);
 
   useEffect(() => {
-    if (products && products.length > 0) {
+    if (products && products.length > 0 && categories) {
       const product = products.find((item) => {
         const itemSlug = generateSlug(item.name);
         return itemSlug === slug;
@@ -48,10 +49,27 @@ const Product = () => {
         setSelectedPrintingOption(product.printingOptions?.[0] || null);
         setSelectedCoverOption(product.coverOptions?.colors?.[0] || null);
         setSelectedQuantity(product.quantities?.[0] || null);
+        
+        // Find category path
+        const findCategoryPath = (categoryId, path = []) => {
+          const category = categories.find(cat => cat._id === categoryId);
+          if (!category) return path;
+          
+          const newPath = [{name: category.name, slug: generateSlug(category.name), _id: category._id}, ...path];
+          
+          if (category.parentId) {
+            return findCategoryPath(category.parentId, newPath);
+          }
+          return newPath;
+        };
+        
+        if (product.categoryId) {
+          setCategoryPath(findCategoryPath(product.categoryId));
+        }
       }
       setLoading(false);
     }
-  }, [slug, products]);
+  }, [slug, products, categories]);
 
   const calculatePrice = useMemo(() => {
     if (!selectedSize || !selectedQuantity) return 0;
@@ -159,6 +177,29 @@ const Product = () => {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto p-4 pb-20 lg:pb-4">
+        {/* Category Breadcrumb */}
+        {categoryPath.length > 0 && (
+          <div className="text-sm breadcrumbs mb-4">
+            <ul>
+              <li>
+                <Link to="/">Anasayfa</Link>
+              </li>
+              {categoryPath.map((category, index) => (
+                <li key={category._id}>
+                  {index === categoryPath.length - 1 ? (
+                    <span className="text-orangeBrand">{category.name}</span>
+                  ) : (
+                    <Link to={`/kategori/${category.slug}`}>{category.name}</Link>
+                  )}
+                </li>
+              ))}
+              <li>
+                <span className="text-gray-600">{productData.name}</span>
+              </li>
+            </ul>
+          </div>
+        )}
+
         {!productData.inStock && (
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
             <p className="font-bold">Ürün Stokta Yok</p>
@@ -296,7 +337,7 @@ const Product = () => {
                       : "text-black hover:bg-gray-100 hover:border-orangeBrand"
                   }`}
                 >
-                  {option.label} - {option.price}₺
+                  {option.label}
                 </button>
               ))}
             </div>

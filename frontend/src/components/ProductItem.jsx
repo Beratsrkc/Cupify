@@ -130,14 +130,14 @@ const ProductItem = React.memo(({
         <div className="flex flex-col relative h-full">
           {/* Stokta yok etiketi */}
           {!inStock && (
-            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded z-50">
+            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded z-40">
               STOKTA YOK
             </div>
           )}
 
           {/* Bestseller etiketi */}
           {bestsellerBadge && (
-            <div className="absolute top-2 left-2 bg-orangeBrand text-white text-xs px-2 py-1 rounded z-50">
+            <div className="absolute top-2 left-2 bg-orangeBrand text-white text-xs px-2 py-1 rounded z-40">
               Çok Satan
             </div>
           )}
